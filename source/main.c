@@ -37,7 +37,11 @@ int main(void) {
 	else if (tmpA = 0x0E || tmpA == 0x07 || tmpA == 0x0D || tmpA == 0x0B) { // 0111 1110 1101 1011
 		cntavail = 0x01;
 	}
-	PORTC = cntavail;
+	
+	PORTC = cntavail; //already sets PC3..PC0
+	if (cntavail == 0x00) {
+		PORTC7 = 1;
+	}
     }
     return 1;
 }
