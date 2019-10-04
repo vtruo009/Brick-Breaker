@@ -48,11 +48,11 @@ expectPORTC 0x04
 checkResult
 
 #full
-test "PINA: 0x0F, PINB: 0x00 => PORTC: 0x00"
+test "PINA: 0x0F, PINB: 0x00 => PORTC: 0x80"
 setPINA 0x0F
 setPINB 0x00
 continue 2
-expectPORTC 0x00
+expectPORTC 0x80
 checkResult
 
 #3 spaces

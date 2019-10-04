@@ -18,6 +18,9 @@ int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
 	unsigned char tmpA = 0x00;
+	unsigned char tmpB = 0x00;
+	unsigned char tmpC = 0x00;
+	//unsigned char led = 0x00;
 	unsigned char cntavail = 0x00;
     /* Insert your solution below */
     while (1) {
@@ -40,8 +43,22 @@ int main(void) {
 	
 	PORTC = cntavail; //already sets PC3..PC0
 	if (cntavail == 0x00) {
-		PORTC7 = 1;
+		PORTC = 0x80;
+
 	}
+	/*tmpA = PINA;
+	tmpB = PINB;
+	tmpC = PINC;
+	if ((tmpA + tmpB + tmpC) > 0x4C) {
+		led = 0x01;
+	}
+	else {
+		led = 0x00;
+	}
+
+	if ((tmpA - tmpC) > 0x50 || (tmpC - tmpA) > 0x50) {
+		led = led + 0x02;
+ 	}*/
     }
     return 1;
 }
