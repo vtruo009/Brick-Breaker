@@ -1,7 +1,14 @@
-Breakpoint 1 at 0xee: file source/main.c, line 21.
+Breakpoint 1 at 0xea: file source/main.c, line 21.
 Note: automatically using hardware breakpoints for read-only addresses.
 ======================================================
 Running all tests..."
 
-"PINA: 0x01, PINB: 0x00 => PORTC: 0x01"..."PINA: 0x000, PINB: 0x01 => PORTC: 0x01"..."PINA: 0x00, PINB: 0x00 => PORTC: 0x00"..."PINA: 0xFF, PINB: 0x00 => PORTC: 0x08"..."PINA: 0x00, PINB: 0xFF => PORTC: 0x08"..."PINA: 0x01, PINB: 0x01 => PORTC: 0x02"..."PINA: 0xFF, PINB: 0xFF => PORTC: 0x10"..."PINA: 0x04, PINB: 0x75 => PORTC: 0x06"...======================================================
+"PINA: 0x01 => PORTC: 0x60"..."PINA: 0x02 => PORTC: 0x60"..."PINA: 0x03 => PORTC: 0x70"..."PINA: 0x04 => PORTC: 0x70"..."PINA: 0x05 => PORTC: 0x38"..."PINA: 0x06 => PORTC: 0x38"..."PINA: 0x07 => PORTC: 0x3C"..."PINA: 0x08 => PORTC: 0x3C"..."PINA: 0x09 => PORTC: 0x3C"..."PINA: 0x0A => PORTC: 0x3E"..."PINA: 0x0B => PORTC: 0x3E"..."PINA: 0x0C => PORTC: 0x3E"..."PINA: 0x0D => PORTC: 0x3F"..."PINA: 0x0E => PORTC: 0x3F"..."PINA: 0x0F => PORTC: 0x3F"..."PINA: 0x33 => PORTC: 0xf0"...
+	Expected 0xf0 
+	PORTC '0x800028:	0xf0
+"PINA: 0x73 => PORTC: 0x70"..."PINA: 0x36 => PORTC: 0xB8"...
+	Expected 0xB8 
+	PORTC '0x800028:	0xb8
+test/tests.gdb:155: Error in sourced command file:
+Undefined command: "checkRedult".  Try "help".
 Quitting: Remote doesn't know how to detach
