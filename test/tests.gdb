@@ -40,123 +40,133 @@ echo Running all tests..."\n\n
 
 # Add tests below
 #1 or 2
-test "PINA: 0x01 => PORTC: 0x60"
-setPINA 0x01
+#test "PINA: 0x01 => PORTC: 0x60"
+#setPINA 0x01
+#continue 2
+#expectPORTC 0x60
+#checkResult
+#
+#test "PINA: 0x02 => PORTC: 0x60"
+#setPINA 0x02
+#continue 2
+#expectPORTC 0x60
+#checkResult
+#
+##3 or 4
+#test "PINA: 0x03 => PORTC: 0x70"
+#setPINA 0x03
+#continue 2
+#expectPORTC 0x70
+#checkResult
+#
+#test "PINA: 0x04 => PORTC: 0x70"
+#setPINA 0x04
+#continue 2
+#expectPORTC 0x70
+#checkResult
+#
+##5 or 6
+#test "PINA: 0x05 => PORTC: 0x38"
+#setPINA 0x05
+#continue 2
+#expectPORTC 0x38
+#checkResult
+#
+#test "PINA: 0x06 => PORTC: 0x38"
+#setPINA 0x06
+#continue 2
+#expectPORTC 0x38
+#checkResult
+#
+##7-9
+#test "PINA: 0x07 => PORTC: 0x3C"
+#setPINA 0x07
+#continue 2
+#expectPORTC 0x3C
+#checkResult
+#
+#test "PINA: 0x08 => PORTC: 0x3C"
+#setPINA 0x08
+#continue
+#expectPORTC 0x3C
+#checkResult
+#
+#test "PINA: 0x09 => PORTC: 0x3C"
+#setPINA 0x09
+#continue 2
+#expectPORTC 0x3C
+#checkResult
+#
+##10-12
+#test "PINA: 0x0A => PORTC: 0x3E"
+#setPINA 0x0A
+#continue 2
+#expectPORTC 0x3E
+#checkResult
+#
+#test "PINA: 0x0B => PORTC: 0x3E"
+#setPINA 0x0B
+#continue 2
+#expectPORTC 0x3E
+#checkResult
+#
+#test "PINA: 0x0C => PORTC: 0x3E"
+#setPINA 0x0C
+#continue 2
+#expectPORTC 0x3E
+#checkResult
+#
+##13-15
+#test "PINA: 0x0D => PORTC: 0x3F"
+#setPINA 0x0D
+#continue 2
+#expectPORTC 0x3F
+#checkResult
+#
+#test "PINA: 0x0E => PORTC: 0x3F"
+#setPINA 0x0E
+#continue 2
+#expectPORTC 0x3F
+#checkResult
+#
+#test "PINA: 0x0F => PORTC: 0x3F"
+#setPINA 0x0F
+#continue 2
+#expectPORTC 0x3F
+#checkResult
+#
+##keys in, driver seated, seatbelt not fastened
+#test "PINA: 0x33 => PORTC: 0xf0"
+#setPINA 0x33
+#continue 2
+#expectPORTC 0xf0
+#checkResult
+#
+#test "PINA: 0x73 => PORTC: 0x70"
+#setPINA 0x73
+#continue 2
+#expectPORTC 0x70
+#checkResult
+#
+#test "PINA: 0x36 => PORTC: 0xB8"
+#setPINA 0x36
+#continue 2
+#expectPORTC 0xB8
+#checkRedult
+
+test "PINA: 0x61 => PORTB :0x06, PORTC: 0x10"
+setPINA 0x61
 continue 2
-expectPORTC 0x60
+expectPORTB 0x06
+expectPORTC 0x10
 checkResult
 
-test "PINA: 0x02 => PORTC: 0x60"
-setPINA 0x02
+test "PINA: 0xAB => PORTB :0x0A, PORTC: 0xB0"
+setPINA 0xAB
 continue 2
-expectPORTC 0x60
+expectPORTB 0x0A
+expectPORTC 0xB0
 checkResult
-
-#3 or 4
-test "PINA: 0x03 => PORTC: 0x70"
-setPINA 0x03
-continue 2
-expectPORTC 0x70
-checkResult
-
-test "PINA: 0x04 => PORTC: 0x70"
-setPINA 0x04
-continue 2
-expectPORTC 0x70
-checkResult
-
-#5 or 6
-test "PINA: 0x05 => PORTC: 0x38"
-setPINA 0x05
-continue 2
-expectPORTC 0x38
-checkResult
-
-test "PINA: 0x06 => PORTC: 0x38"
-setPINA 0x06
-continue 2
-expectPORTC 0x38
-checkResult
-
-#7-9
-test "PINA: 0x07 => PORTC: 0x3C"
-setPINA 0x07
-continue 2
-expectPORTC 0x3C
-checkResult
-
-test "PINA: 0x08 => PORTC: 0x3C"
-setPINA 0x08
-continue
-expectPORTC 0x3C
-checkResult
-
-test "PINA: 0x09 => PORTC: 0x3C"
-setPINA 0x09
-continue 2
-expectPORTC 0x3C
-checkResult
-
-#10-12
-test "PINA: 0x0A => PORTC: 0x3E"
-setPINA 0x0A
-continue 2
-expectPORTC 0x3E
-checkResult
-
-test "PINA: 0x0B => PORTC: 0x3E"
-setPINA 0x0B
-continue 2
-expectPORTC 0x3E
-checkResult
-
-test "PINA: 0x0C => PORTC: 0x3E"
-setPINA 0x0C
-continue 2
-expectPORTC 0x3E
-checkResult
-
-#13-15
-test "PINA: 0x0D => PORTC: 0x3F"
-setPINA 0x0D
-continue 2
-expectPORTC 0x3F
-checkResult
-
-test "PINA: 0x0E => PORTC: 0x3F"
-setPINA 0x0E
-continue 2
-expectPORTC 0x3F
-checkResult
-
-test "PINA: 0x0F => PORTC: 0x3F"
-setPINA 0x0F
-continue 2
-expectPORTC 0x3F
-checkResult
-
-#keys in, driver seated, seatbelt not fastened
-test "PINA: 0x33 => PORTC: 0xf0"
-setPINA 0x33
-continue 2
-expectPORTC 0xf0
-checkResult
-
-test "PINA: 0x73 => PORTC: 0x70"
-setPINA 0x73
-continue 2
-expectPORTC 0x70
-checkResult
-
-test "PINA: 0x36 => PORTC: 0xB8"
-setPINA 0x36
-continue 2
-expectPORTC 0xB8
-checkRedult
-
-
-
-
 
 
 

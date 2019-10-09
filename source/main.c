@@ -15,11 +15,11 @@
 int main(void) {
     /* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;
-//	DDRB = 0x00; PORTB = 0xFF;
+	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
     /* Insert your solution below */
     while (1) {
-	unsigned char tmpA = PINA;
+/*	unsigned char tmpA = PINA;
 	unsigned char fuelMask = 0x40;
 	unsigned char seatbeltLight = 0x80;
 	unsigned char tmpC = 0x00;
@@ -47,6 +47,16 @@ int main(void) {
 		tmpC = tmpC | seatbeltLight;
 	}
 
+	PORTC = tmpC;*/
+
+	unsigned char tmpA = PINA;
+	unsigned char tmpB = 0x00;
+	unsigned char tmpC = 0x00;
+
+	tmpB = (tmpA >> 4) & 0xFF;
+	PORTB = tmpB;
+
+	tmpC = (tmpA << 4) & 0xFF;
 	PORTC = tmpC;
 
     }
