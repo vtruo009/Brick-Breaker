@@ -1,7 +1,7 @@
 /*	Author: vtruo009
  *  Partner(s) Name: An Pho
- *	Lab Section:
- *	Assignment: Lab #  Exercise #
+ *	Lab Section: 023
+ *	Assignment: Lab #4  Exercise #1
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -11,27 +11,31 @@
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #endif
+enum LED_States {LED_SMStart, LED_OFFRelease, LED_ONRelease, LED_OFFPress, LED_ONPress} LED_State;
 
+void TickFct_Latch() {
+
+	switch (LED_State) {
+		case LED_SMStart:
+			LED_State = LED_OFFRelease;
+			break;
+		case LED_
+
+
+
+
+
+
+
+}
 int main(void) {
     /* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;
-	//DDRB = 0xFF; PORTB = 0x00;
+	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
     /* Insert your solution below */
-	unsigned char inputA = 0x00;
-	unsigned char tempB = 0x00;
     while (1) {
-	inputA = PINA & 0xFF;
-	if(inputA >= 0x46) {
-		tempB = 0x02;
-	}
-	else if((inputA > 0x05) && (inputA < 0x46)) {
-		tempB = 0x04;
-	}
-	else if(inputA <= 0x05) {
-		tempB = 0x00;
-	}
-	PORTC = tempB;
+		
     }
     return 1;
 }
