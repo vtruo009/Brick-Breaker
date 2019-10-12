@@ -1,4 +1,4 @@
-# Test file for Lab2_introToAVR
+# Test file for Lab4_introToAVR
 
 
 # commands.gdb provides the following functions for ease:
@@ -39,67 +39,48 @@ echo Running all tests..."\n\n
 #checkResult
 
 # Add tests below
-#1 1's
-test "PINA: 0x01, PINB: 0x00 => PORTC: 0x01"
+test "PINA: 0x01, 0x02 => PORTB: 0x01, PORTC: Unlocked"
 setPINA 0x01
-setPINB 0x00
 continue 2
-expectPORTC 0x01
+setPINA 0x02
+continue 2
+expectPORTB 0x01
+expectPORTC Unlocked
 checkResult
 
-test "PINA: 0x000, PINB: 0x01 => PORTC: 0x01"
+test "PINA: 0x01, 0x00 => PORTB: 0x00, PORTC: Locked"
 setPINA 0x01
- setPINB 0x00
 continue 2
-expectPORTC 0x01
-checkResult
-
-#0 1's
-test "PINA: 0x00, PINB: 0x00 => PORTC: 0x00"
 setPINA 0x00
-setPINB 0x00
 continue 2
-expectPORTC 0x00
+expectPORTB 0x00
+expectPORTC Locked
 checkResult
 
-#8 1's
-test "PINA: 0xFF, PINB: 0x00 => PORTC: 0x08"
- setPINA 0xFF
- setPINB 0x00
- continue 2
- expectPORTC 0x08
- checkResult
+test "PINA: 0x00, 0x02 => PORTB: 0x00, PORTC: Locked"
+setPINA 0x00
+continue 2
+setPINA 0x02
+continue 2
+expectPORTB 0x00
+expectPORTC Locked
+checkResult
 
- test "PINA: 0x00, PINB: 0xFF => PORTC: 0x08"
- setPINA 0xFF
- setPINB 0x00
- continue 2
- expectPORTC 0x08
- checkResult
+test "PINA: 0x01, 0x02, 0x80 => PORTB: 0x00, PORTC: Locked"
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x80
+continue 2
+expectPORTB 0x00
+expectPORTC Locked
+checkResult
 
-#2 1's
-test "PINA: 0x01, PINB: 0x01 => PORTC: 0x02"
- setPINA 0x01
- setPINB 0x01
- continue 2
- expectPORTC 0x02
- checkResult
 
-#16 1's
-test "PINA: 0xFF, PINB: 0xFF => PORTC: 0x10"
- setPINA 0xFF
- setPINB 0xFF
- continue 2
- expectPORTC 0x10
- checkResult
 
-#random
-test "PINA: 0x04, PINB: 0x75 => PORTC: 0x06"
- setPINA 0x04
- setPINB 0x75
- continue 2
- expectPORTC 0x06
- checkResult
+
+
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed

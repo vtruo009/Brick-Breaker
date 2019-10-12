@@ -1,4 +1,4 @@
-# Test file for Lab2_introToAVR
+# Test file for Lab4_introToAVR
 
 
 # commands.gdb provides the following functions for ease:
@@ -39,28 +39,47 @@ echo Running all tests..."\n\n
 #checkResult
 
 # Add tests below
-test "PINA: 0x01, PINB: 0x00 => PORTC: 0x00"
+test "PINA: 0x01, 0x00, 0x01 => PORTB: 0x01, state: LED_OFFPress"
+set state = LED_SMStart
 setPINA 0x01
-setPINB 0x00
-continue 5
-expectPORTC 0x00
+continue 2
+setPINA 0x00
+continue 2
+setPINA 0x01
+continue 2
+expectPORTB 0x01
+expect state LED_OFFPress
 checkResult
 
-test "PINA: 0x06, PINB: 0x00 => PORTC: 0x04"
-setPINA 0x06
-setPINB 0x00
-continue 5
-expectPORTC 0x04
+test "PINA: 0x00, 0x01, 0x01 => PORTB: 0x02, state: LED_ONPress"
+set state = LED_SMStart
+setPINA 0x00
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+expectPORTB 0x02
+expect state LED_ONPress
 checkResult
 
-test "PINA: 0x47, PINB: 0x00 => PORTC: 0x02"
-setPINA 0x47
-setPINB 0x00
-continue 5
-expectPORTC 0x02
+test "PINA: 0x01, 0x00, 0x01, 0x00, 0x01, 0x00 => PORTB: 0x01, state: LED_OFFRelease"
+set state = LED_SMStart
+setPINA 0x01
+continue 2
+setPINA 0x00
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x00
+continue 2
+setPINA 0x01
+cotninue 2
+setPINA 0x00
+continue 2
+expectPORTB 0x01
+expect state LED_OFFRelease
 checkResult
-
-
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed

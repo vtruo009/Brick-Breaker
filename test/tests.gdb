@@ -1,4 +1,4 @@
-# Test file for Lab2_introToAVR
+# Test file for Lab4_introToAVR
 
 
 # commands.gdb provides the following functions for ease:
@@ -39,26 +39,46 @@ echo Running all tests..."\n\n
 #checkResult
 
 # Add tests below
-test "PINA: 0x01, PINB: 0x00 => PORTC: 0x00"
+test "PINA: 0x01, 0x02 => PORTB: 0x01, PORTC: Unlocked"
 setPINA 0x01
-setPINB 0x00
-continue 5
-expectPORTC 0x00
+continue 2
+setPINA 0x02
+continue 2
+expectPORTB 0x01
+expectPORTC Unlocked
 checkResult
 
-test "PINA: 0x06, PINB: 0x00 => PORTC: 0x04"
-setPINA 0x06
-setPINB 0x00
-continue 5
-expectPORTC 0x04
+test "PINA: 0x01, 0x00 => PORTB: 0x00, PORTC: Locked"
+setPINA 0x01
+continue 2
+setPINA 0x00
+continue 2
+expectPORTB 0x00
+expectPORTC Locked
 checkResult
 
-test "PINA: 0x47, PINB: 0x00 => PORTC: 0x02"
-setPINA 0x47
-setPINB 0x00
-continue 5
-expectPORTC 0x02
+test "PINA: 0x00, 0x02 => PORTB: 0x00, PORTC: Locked"
+setPINA 0x00
+continue 2
+setPINA 0x02
+continue 2
+expectPORTB 0x00
+expectPORTC Locked
 checkResult
+
+test "PINA: 0x01, 0x02, 0x80 => PORTB: 0x00, PORTC: Locked"
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x80
+continue 2
+expectPORTB 0x00
+expectPORTC Locked
+checkResult
+
+
+
 
 
 

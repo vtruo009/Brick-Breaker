@@ -1,4 +1,4 @@
-# Test file for Lab2_introToAVR
+# Test file for Lab4_introToAVR
 
 
 # commands.gdb provides the following functions for ease:
@@ -39,127 +39,63 @@ echo Running all tests..."\n\n
 #checkResult
 
 # Add tests below
-#1 or 2
-test "PINA: 0x01 => PORTC: 0x60"
-setPINA 0x01
+test "PINA: 0x00, 0x01 => PORTB: 0x08, state: ID_PA0Pressed"
+set state = ID_SMStart
+setPINA = 0x00
 continue 2
-expectPORTC 0x60
+setPINA = 0x01
+continue 2
+expectPORTB 0x08
+expect state ID_PA0Pressed
 checkResult
 
-test "PINA: 0x02 => PORTC: 0x60"
+test "PINA: 0x00, 0x02 => PORTB: 0x06, state: ID_PA1Pressed"
+set state = ID_SMStart
+setPINA 0x00
+continue 2
 setPINA 0x02
 continue 2
-expectPORTC 0x60
+expectPORTB 0x06
+expect state ID_PA1Pressed
 checkResult
 
-#3 or 4
-test "PINA: 0x03 => PORTC: 0x70"
+test "PINA: 0x00, 0x03 => PORTB: 0x00, state: ID_Reset"
+set state = ID_SMStart
+setPINA 0x00
+continue 2
 setPINA 0x03
 continue 2
-expectPORTC 0x70
+expectPORTB 0x00
+expect state ID_Reset
 checkResult
 
-test "PINA: 0x04 => PORTC: 0x70"
-setPINA 0x04
+test "PINA: 0x00, 0x01, 0x01, 0x01 => PORTB: 0x09, state: ID_PA0Pressed"
+set state = ID_SMStart
+setPINA 0x00
 continue 2
-expectPORTC 0x70
-checkResult
-
-#5 or 6
-test "PINA: 0x05 => PORTC: 0x38"
-setPINA 0x05
+setPINA 0x01
 continue 2
-expectPORTC 0x38
-checkResult
-
-test "PINA: 0x06 => PORTC: 0x38"
-setPINA 0x06
+setPINA 0x01
 continue 2
-expectPORTC 0x38
-checkResult
-
-#7-9
-test "PINA: 0x07 => PORTC: 0x3C"
-setPINA 0x07
+setPINA 0x01
 continue 2
-expectPORTC 0x3C
+expectPORTB 0x09
+expect state ID_PA0Pressed
 checkResult
 
-test "PINA: 0x08 => PORTC: 0x3C"
-setPINA 0x08
-continue
-expectPORTC 0x3C
-checkResult
-
-test "PINA: 0x09 => PORTC: 0x3C"
-setPINA 0x09
+test "PINA: 0x00, 0x02, 0x02, 0x02 => PORTB: 0x00, state: ID_PA1Pressed"
+set state = ID_SMStart
+setPINA 0x00
 continue 2
-expectPORTC 0x3C
-checkResult
-
-#10-12
-test "PINA: 0x0A => PORTC: 0x3E"
-setPINA 0x0A
+setPINA 0x02
 continue 2
-expectPORTC 0x3E
-checkResult
-
-test "PINA: 0x0B => PORTC: 0x3E"
-setPINA 0x0B
+setPINA 0x02
 continue 2
-expectPORTC 0x3E
-checkResult
-
-test "PINA: 0x0C => PORTC: 0x3E"
-setPINA 0x0C
+setPINA 0x02
 continue 2
-expectPORTC 0x3E
+expectPORTB 0x00
+expect state ID_PA1Pressed
 checkResult
-
-#13-15
-test "PINA: 0x0D => PORTC: 0x3F"
-setPINA 0x0D
-continue 2
-expectPORTC 0x3F
-checkResult
-
-test "PINA: 0x0E => PORTC: 0x3F"
-setPINA 0x0E
-continue 2
-expectPORTC 0x3F
-checkResult
-
-test "PINA: 0x0F => PORTC: 0x3F"
-setPINA 0x0F
-continue 2
-expectPORTC 0x3F
-checkResult
-
-#keys in, driver seated, seatbelt not fastened
-test "PINA: 0x33 => PORTC: 0xf0"
-setPINA 0x33
-continue 2
-expectPORTC 0xf0
-checkResult
-
-test "PINA: 0x73 => PORTC: 0x70"
-setPINA 0x73
-continue 2
-expectPORTC 0x70
-checkResult
-
-test "PINA: 0x36 => PORTC: 0xB8"
-setPINA 0x36
-continue 2
-expectPORTC 0xB8
-checkRedult
-
-
-
-
-
-
-
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed
