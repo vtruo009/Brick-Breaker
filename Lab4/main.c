@@ -12,7 +12,7 @@
 #include "simAVRHeader.h"
 #endif
 
-/*enum states {SMStart, Locked, NPressed, Unlocked} state;
+/*enum states {SMStart, NPressed, Locked, Unlocked} state;
 
 void TickFct_Latch() {
 	unsigned char X = PINA & 0x01; //isolate PA0
@@ -27,17 +27,8 @@ void TickFct_Latch() {
 			break;
 
 		case Locked:
-			if ((P && !X && !Y && !P7)) { //check if # is pressed. y: cont. to state NPressed to get Y
+			if (P && !X && !Y && !P7) { //check if # is pressed. y: cont. to state NPressed to get Y
 				state = NPressed;
-				case NPressed: //check for Y
-                                if (!P && !X && Y && !P7) {
-                                        state = Unlocked;
-                                }
-                                else {
-                                        state = Locked;
-                                }
-                                break;
-
 			}
 			else {	//# is not pressed, door remains locked
 				state = Locked;
@@ -51,7 +42,6 @@ void TickFct_Latch() {
 					state = Locked;
 				}
 				break;
-			break;
 
 		case Unlocked:
 			if (P7) {
@@ -64,7 +54,6 @@ void TickFct_Latch() {
 
 		default:
 			state = Locked;
-			break;
 	}
 
 	switch (state) {
@@ -78,7 +67,7 @@ void TickFct_Latch() {
 			break;
 			case NPressed:
 				tmpC = NPressed;
-				break;
+			break;
 
 		case Unlocked:
 			door = 0x01;
@@ -94,7 +83,7 @@ void TickFct_Latch() {
 }*/
 
 //part 1
-/*enum LED_States {LED_SMStart, LED_OFFRelease, LED_ONPress, LED_ONRelease, LED_OFFPress} LED_State;
+enum LED_States {LED_SMStart, LED_OFFRelease, LED_ONPress, LED_ONRelease, LED_OFFPress} LED_State;
 
 void TickFct_Latch() {
 	unsigned char tmpA = PINA & 0x01; // isolate bit 0;
@@ -168,10 +157,10 @@ void TickFct_Latch() {
 			break;
 	}
 	PORTB = tmpB;
-}*/
+}
 
 //part 2
-enum ID_States {ID_SMStart, ID_Wait, ID_PA0Pressed, ID_PA1Pressed, ID_Reset} ID_State;
+/*enum ID_States {ID_SMStart, ID_Wait, ID_PA0Pressed, ID_PA1Pressed, ID_Reset} ID_State;
 
 void TickFct_Latch() {
 	unsigned char A0 = PINA & 0x01; //isolate PA0
@@ -264,7 +253,7 @@ void TickFct_Latch() {
 			break;
 	}
 	PORTB = result;	
-}
+}*/
 
 int main(void) {
     /* Insert DDR and PORT initializations */
@@ -272,9 +261,9 @@ int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
     /* Insert your solution below */
-// 	LED_State = LED_SMStart;
-	ID_State = ID_SMStart;
-//	state = SMStart;
+ 	LED_State = LED_SMStart;
+	//ID_State = ID_SMStart;
+	//state = SMStart;
 
     while (1) {
 	TickFct_Latch();

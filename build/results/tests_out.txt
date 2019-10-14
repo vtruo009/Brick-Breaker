@@ -1,19 +1,11 @@
-Breakpoint 1 at 0x1c0: file source/main.c, line 92.
+Breakpoint 1 at 0x284: file source/main.c, line 279.
 Note: automatically using hardware breakpoints for read-only addresses.
 ======================================================
 Running all tests..."
 
-"PINA: 0x01, 0x02 => PORTB: 0x01, PORTC: Unlocked"..."PINA: 0x01, 0x00 => PORTB: 0x00, PORTC: Locked"...
-	Expected 0x00 
-	PORTB '0x800025:	0x01
-
-	Expected Locked 
-	PORTC '0x800028:	0x03
-"PINA: 0x00, 0x02 => PORTB: 0x00, PORTC: Locked"...
-	Expected 0x00 
-	PORTB '0x800025:	0x01
-
-	Expected Locked 
-	PORTC '0x800028:	0x03
-"PINA: 0x01, 0x02, 0x80 => PORTB: 0x00, PORTC: Locked"...======================================================
+"PINA: 0x01, 0x00, 0x01 => PORTB: 0x01, ID_State: LED_OFFPress"...
+	Expected 0x01 
+	PORTB '0x800025:	0x08
+test/tests.gdb:13: Error in sourced command file:
+No symbol "LED_OFFPress" in current context.
 Quitting: Remote doesn't know how to detach
