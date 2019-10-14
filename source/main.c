@@ -12,7 +12,7 @@
 #include "simAVRHeader.h"
 #endif
 
-enum states {SMStart, NPressed, Locked, Unlocked} state;
+/*enum states {SMStart, NPressed, Locked, Unlocked} state;
 
 void TickFct_Latch() {
 	unsigned char X = PINA & 0x01; //isolate PA0
@@ -80,14 +80,190 @@ void TickFct_Latch() {
 	PORTC = tmpC;
 	PORTB = door;
 
-}
+}*/
+
+//part 1
+/*enum LED_States {LED_SMStart, LED_OFFRelease, LED_ONPress, LED_ONRelease, LED_OFFPress} LED_State;
+
+void TickFct_Latch() {
+	unsigned char tmpA = PINA & 0x01 // isolate bit 0;
+	unsigned char tmpB = 0x01;
+	switch (LED_State) {
+		case LED_SMStart:
+			LED_State = LED_OFFRelease;
+			break;
+		case LED_OFFRelease:
+			if (tmpA) {
+				LED_State = LED_ONPress;
+			}
+			else if (!tmpA) {
+				LED_State = LED_OFFRelease;
+			}
+			break;
+		
+		case LED_ONPress:
+			if (tmpA) {
+				LED_State = LED_ONPress;
+			}
+			else if (!tmpA) {
+				LED_State = LED_ONRelease;
+			}
+			break;
+		
+		case LED_ONRelease:
+			if (tmpA) {
+				LED_State = LED_OFFPress;
+			}
+			else if (!tmpA) {
+				LED_State = LED_ONRelease;
+			}
+			break;
+
+		case LED_OFFPress:
+			if (tmpA) {
+				LED_State = LED_OFFPress;
+			}
+			else if (!tmpA) {
+				LED_State = LED_OFFRelease;
+			}
+			break;
+
+		default:
+			LED_State = LED_SMStart;
+			break;
+	}
+
+	switch (LED_State) {
+		case LED_SMStart:
+			break;
+
+		case LED_OFFRelease:
+			tmpB = 0x01;
+			break;
+		
+		case LED_ONPress:
+			tmpB = 0x02;
+			break;
+		
+		case LED_ONRelease:
+			tmpB = 0x02;
+			break;
+
+		case LED_OFFPress:
+			tmpB = 0x01;
+			break;
+		
+		default:
+			break;
+	}
+	PORTB = tmpB;
+}*/
+
+//part 2
+/*enum ID_States {ID_SMStart, ID_Wait, ID_PA0Pressed, ID_PA1Pressed, ID_Reset} ID_State;
+
+void TickFct_Latch() {
+	unsigned char A0 = PINA & 0x01; //isolate PA0
+	unsigned char A1 = PINA & 0x02; //isolate PA1
+	unsigned char result = 0x07;
+	switch (ID_State) {
+		case ID_SMStart:
+			ID_State = ID_Wait;
+			break;
+
+		case ID_Wait:
+			if (!A0 && !A1) {
+				ID_State = ID_Wait;
+			}
+			else if ((A0 && !A1) && (result < 9)) {
+				ID_State = ID_PA0Pressed;
+			}
+			else if ((!A0 && A1) && (result > 0)) {
+				ID_State = ID_PA1Pressed;
+			}
+			else if (A0 && A1) {
+				ID_State = ID_Reset;
+			}
+			break;
+
+		case ID_PA0Pressed:
+			if (A0 && !A1) {
+				ID_State = ID_PA0Pressed;
+			}
+			else if (!A0 && !A1) {
+				ID_State = ID_Wait;
+			}
+			else if (!A0 && A1) {
+				ID_State = ID_PA1Pressed;
+			}
+			else if (A0 && A1) {
+				ID_State = ID_Reset;
+			}
+			break;
+
+		case ID_PA1Pressed:
+			if (!A0 && A1) {
+				ID_State = ID_PA1Pressed;
+			}
+			else if (!A0 && !A1) {
+				ID_State = ID_Wait;
+			}
+			else if (A0 && !A1) {
+				ID_State = ID_PA0Pressed;
+			}
+			else if (A0 && A1) {
+				ID_State = ID_Reset;
+			}
+			break;
+
+		case ID_Reset:
+			if (A0 && A1) {
+				ID_State = ID_Reset;
+			}
+			else if (A0 && !A1) {
+				ID_State = ID_PA0Pressed;
+			}
+			else if (!A0 && A1) {
+				ID_State = ID_PA1Pressed;
+			}
+			else if (!A0 && !A1) {
+				ID_State = ID_Wait;
+			}
+
+		default:
+			ID_State = ID_SMStart;
+	}
+
+	switch (ID_State) {
+		case ID_Wait:
+			break;
+
+		case ID_PA0Pressed:
+			++result;
+			break;
+
+		case ID_PA1Pressed:
+			--result;
+			break;
+
+		case ID_Reset:
+			result = 0x00;
+			break;
+		default:
+			break;
+	}
+	PORTB = result;	
+}*/
+
 int main(void) {
     /* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
     /* Insert your solution below */
-    state = SMStart;
+    //LED_State = LED_SMStart;
+	//ID_State = ID_SMStart;
+	//state = SMStart;
 
     while (1) {
 	TickFct_Latch();
