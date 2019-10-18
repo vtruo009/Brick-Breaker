@@ -28,24 +28,31 @@
 /*
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
-#include <asf.h>
+#include <avr/io.h>
+
+#ifdef _SIMULATE_
+#include "simAVRHeader.h"
+#endif
 
 int main (void)
 {
 	/* Insert system clock initialization code here (sysclk_init()). */
 
-	board_init();
+	//board_init();
 
 	/* Insert application code here, after the board has been initialized. */
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRC = 0xFF; PORTC = 0x00;
 	while (1) {
-		unsigned char tmpA = ~PINA;
+		unsigned char tmpA = PINA; //rmb to add ~ when testing with board
 		unsigned char fuelMask = 0x40;
 		unsigned char tmpC = 0x00;
 		
 		//bits are flipped on bboard
-		if ((tmpA & 0x0F) <= 0x02) {
+		if (tmpA == 0x00) {
+			tmpC = 0x00;
+		}		
+		else if ((tmpA & 0x0F) <= 0x02) {
 			tmpC = 0x20 | fuelMask;
 		}
 		else if ((tmpA & 0x0F) <= 0x04) {
