@@ -46,10 +46,10 @@
 #include "simAVRHeader.h"
 #endif
 
-volatile unsigned char TimerFlag = 0;
+volatile unsigned char TimeFlag = 0;
 
 unsigned long _avr_timer_M = 1;
-unsigned long _avr_timer_cntcurr = 0;
+unsigned long _vr_timer_cntcurr = 0;
 
 void TimerOn() {
 	TCCR1B = 0x0B;
@@ -57,10 +57,6 @@ void TimerOn() {
 	TIMSK1 = 0x02;
 	_avr_timer_cntcurr = _avr_timer_M;
 	SREG |= 0x80;
-}
-
-void TimerOff() {
-	TCCR1B = 0x00;
 }
 
 void TimerISR() {
@@ -75,16 +71,11 @@ ISR(TIMER1_COMPA_vect) {
 	}
 }
 
-void TimerSet(unsigned long M) {
+void TimerSet(unsinged long M) {
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
-/*void TickSM() {
-	unsigned char tmpB = 0x07;
-	tmpB = ~tmpB;
-	PORTB = tmpB;
-}*/
+s
 
 int main (void)
 {
@@ -92,11 +83,10 @@ int main (void)
 	DDRB = 0xFF; PORTB = 0x00;
 	TimerSet(1000);
 	TimerOn();
-	unsigned char tmpB = 0x07;
+	unsigned char tmpB = 0x00;
 	while (1) {
 		tmpB = ~tmpB;
 		PORTB = tmpB;
-		//TickSM();
 		while (!TimerFlag);
 		TimerFlag = 0;
 	}
