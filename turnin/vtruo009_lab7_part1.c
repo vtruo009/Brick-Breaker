@@ -28,21 +28,12 @@
 /*
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
-//#include <asf.h>
-
- 
-/*  Author: vtruo009
- *  Partner(s) Name: An Pho
- *	Lab Section:
- *	Assignment: Lab #6  Exercise #3
- *	Exercise Description: [optional - include for your own benefit]
- *
- *	I acknowledge all content contained herein, excluding template or example
- *	code, is my own original work.
- */
-
+#include <asf.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+
+#include "io.h"
+#include "io.c"
 
 volatile unsigned char TimerFlag = 0;
 
@@ -81,6 +72,8 @@ void TimerSet(unsigned long M) {
 }
 
 enum ID_States {ID_SMStart, ID_Wait, ID_Init, ID_Incr, ID_HoldIncr, ID_Decr, ID_HoldDecr, ID_Reset, ID_HoldReset} ID_State;
+
+unsigned char score = 0;
 
 void TickFct_Latch() {
 	unsigned char A0 = ~PINA & 0x01; //isolate A0 //rmb to add ~ when testing with board
@@ -193,44 +186,56 @@ void TickFct_Latch() {
 			break;
 		
 		case ID_Init:
-			PORTB = 0x07;
+			score = 0;
+			LCD_Cursor(1); //need to add so number will stay in place
+			LCD_WriteData(score + '0');
 			i = 0;
 			break;
 
 		case ID_Incr:
-			if (PORTB < 9) {
-				PORTB = PORTB + 0x01;
+			if (score < 9) {
+				++score;
+				LCD_Cursor(1);
+				LCD_WriteData(score + '0');
 				i = 0;
 			}
 			break;
 		
 		case ID_HoldIncr:
-			if (!(i < 5)) {
-				if (PORTB < 9) {
-					PORTB = PORTB + 0x01;
+			if (!(i < 10)) {
+				if (score < 9) {
+					++score;
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
 				}
 				i = 0;
 			}
 			break;
 		
 		case ID_Decr:
-			if (PORTB > 0) {
-				PORTB = PORTB - 0x01;
+			if (score > 0) {
+				--score;
+				LCD_Cursor(1);
+				LCD_WriteData(score + '0');
 				i = 0;
 			}
 			break;
 		
 		case ID_HoldDecr:
-			if (!(i < 5)) {
-				if (PORTB > 0) {
-					PORTB = PORTB - 0x01;
+			if (!(i < 10)) {
+				if (score > 0) {
+					--score;
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
 				}
 				i = 0;
 			}
 			break;
 		
 		case ID_Reset:
-			PORTB = 0x00;
+			score = 0;
+			LCD_Cursor(1);
+			LCD_WriteData(score + '0');
 			i = 0;
 			break;
 		
@@ -242,19 +247,20 @@ void TickFct_Latch() {
 			break;
 	}
 	++i;
-	//PORTB = result;
 }
 
 int main (void)
 {
 	/* Insert application code here, after the board has been initialized. */
 	DDRA = 0x00; PORTA = 0xFF;
-	DDRB = 0xFF; PORTB = 0x00;
-	DDRC = 0x00; PORTC = 0xFF;
-	DDRD = 0x00; PORTD = 0xFF;
-
+	//DDRB = 0xFF; PORTB = 0x00;
+	DDRC = 0xFF; PORTC = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	
+	LCD_init();
+	
 	//set and turn on timer
-	TimerSet(200);
+	TimerSet(100);
 	TimerOn();
 	
 	ID_State = ID_SMStart;
