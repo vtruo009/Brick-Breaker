@@ -78,6 +78,7 @@ unsigned char keeper = 0;
 void TickFct_Blink() {
 	
 	unsigned char A0 = ~PINA & 0x01;
+	unsigned char A1 = ~PINA & 0x02;
 	
 	switch (LED) {
 		case LED_Init:
@@ -162,6 +163,7 @@ void TickFct_Blink() {
 		
 		case LED_B0:
 			PORTB = 0x01;
+			keeper = 0;
 			LCD_Cursor(1);
 			LCD_WriteData(score + '0');
 			break;
@@ -178,6 +180,7 @@ void TickFct_Blink() {
 		
 		case LED_B2:
 			PORTB = 0x04;
+			keeper = 2;
 			break;
 		
 		case LED_B2_Hold:
@@ -202,7 +205,10 @@ void TickFct_Blink() {
 				LCD_Cursor(1);
 				LCD_WriteData(score + '0');
 			}
-		
+			break;
+			
+		default:
+			break;
 	}
 }
 
