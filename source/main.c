@@ -12,9 +12,29 @@
 #include "simAVRHeader.h"
 #endif
 
-void ADC_init() {
-	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
-	//ADEN: setting this bit enables analog-to-digital conversion
+void set_PWM(double frequency) {
+	static double current_frequency;
+	if (frequency != current_frequency) {
+		if (!frequency) { TCCR3B &= 0x08; }
+		else { TCCR3B |= 0x03; }
+		if (frequency > .954) { OCR3A = 0xFFFF; }
+		else if (frequency > 31250) { OCR3A = 0x0000; }
+		else { OCR3A = (short) (8000000 / (128 * frequency)) - 1; }
+	
+		TCNT3 = 0;
+		current_frequency = frequency;
+	}
+}
+
+void PWM_on() {
+	TCCR3A = (1 << COM3A0);
+	TCCR3B = (1 << WGM32) | (1<< CS31) | (1 << CS30);
+	set_PWM(0);
+}
+
+void PWM_off() {
+	TCCR3A = 0x00;
+	TCCR3B = 0x00;
 }
 
 int main(void) {
@@ -23,15 +43,19 @@ int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
 	
-	ADC_init();
+	unsigned char tmpA = ~PINA & 0x01;
+	unsigned char tmpB = ~PINA & 0x02;
+	unsigned char tmpC = ~PINA & 0x04;
+	
+	PWM_on();	
+	set_PWM(261.63);
+	
 
     /* Insert your solution below */
     while (1) {
-	unsigned short tmp = ADC;
-	unsigned char PB = (char)tmp;
-	unsigned char PD = (char)(tmp >> 4);
-	PORTB = PB;
-	PORTD = PD;
+	
+		PORTB = 0x40;
+	
     }
     return 1;
 }
