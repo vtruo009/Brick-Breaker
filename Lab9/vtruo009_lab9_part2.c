@@ -29,9 +29,9 @@ void TimerOn() {
 					//00001011: 0x0B
 					//So 8MHz clock or 8,000,000 /64 = 125,000 ticks/s
 
-	//AVR putput compare register OCR1A
-	OCR1A = 125;
-	TIMSK1 = 0x02;
+	//AVR output compare register OCR1A
+	OCR1A = 125; //timer interrupt will be generated when TCNT == OCR1A
+	TIMSK1 = 0x02; //bit1: OCIE1A -- enables compare match interrupt
 	
 	//initiate AVR counter
 	TCNT1 = 0;
