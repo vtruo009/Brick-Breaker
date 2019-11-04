@@ -108,7 +108,7 @@ int main (void)
 	tasks[i].elapsedTime = tasks[i].period;
 	tasks[i].TickFct = &ThreeLEDs;
 	
-	TimerSet(tasksPeriodGCD);
+	TimerSet(1000);
 	TimerOn();
 	
 	while (1) {
