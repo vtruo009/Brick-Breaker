@@ -1,7 +1,7 @@
 /*	Author: Van Truong
  *  Partner(s) Name: An Pho
  *	Lab Section: 023
- *	Assignment: Lab #10  Exercise #1
+ *	Assignment: Lab #10  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
