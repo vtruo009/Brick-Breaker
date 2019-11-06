@@ -1,7 +1,7 @@
 /*	Author: Van Truong
  *  	Partner(s) Name: An Pho
  *	Lab Section: 023
- *	Assignment: Lab #10  Exercise #4
+ *	Assignment: Lab #11  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -15,6 +15,27 @@
 #include "keypad.h"
 #endif
 
+//--------Task scheduler data structure--------------------------
+typedef struct _task {
+	unsigned char state;
+	unsigned long int period;
+	unsigned long int elapsedTime;
+	int (*TickFct)(int);
+} task;
+//--------End task scheduler data structure----------------------
+
+//--------Shared variables-------------------------------------------
+unsigned char led0_output = 0x00;
+unsigned char led1_output = 0x00;
+unsigned char pause = 0;
+//--------End shared variables----------------------------------------
+
+//-----------ENUMS and SM declarations-------------------------------
+enum pauseButtonSM_States { pauseButton_wait, pauseBUtton_press, pauseButton_release };
+int pauseButtonSMTick(int state);
+//----------End ENUMS and SM declarations----------------------------
+
+//FIX LAB NUMBER ON PART 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int main(void) {
 	DDRC = 0xF0; PORTC = 0x0F;
 	DDRB = 0xFF; PORTB = 0x00;
@@ -22,30 +43,41 @@ int main(void) {
 	unsigned char x;
 	while (1) {
 		x = GetKeypadKey();
-		switch(x) {
-			case '\0': PORTB = 0x1F; break; //all 5 LEDs on
-			case '1': PORTB = 0x01; break; //hex equivalent
-			case '2': PORTB = 0x02; break;
-			case '3': PORTB = 0x03; break;
-			case '4': PORTB = 0x04; break;
-			case '5': PORTB = 0x05; break;
-			case '6': PORTB = 0x06; break;
-			case '7': PORTB = 0x07; break;
-			case '8': PORTB = 0x08; break;
-			case '9': PORTB = 0x09; break;
-			case 'A': PORTB = 0x0A; break;
-			case 'B': PORTB = 0x0B; break;
-			case 'C': PORTB = 0x0C; break; 
-			case 'D': PORTB = 0x0D; break;
-			case '*': PORTB = 0x0E; break;
-			case '#': PORTB = 0x0F; break;
-			default: PORTB = 0x1B; break;
-		}
+		
 	}
 
 	return 1;
 }
 
+int pauseButtonSMTick(int state) {
+	unsigned char press = ~PINA & 0x01;
+
+	switch (state) {
+		case pauseButton_wait:
+			state = press == 0x01? pauseButton_press: pauseButton_wait;
+			break;
+		case pauseButton_press:
+			state = pauseButton_release;
+			break;
+		case pauseButton_release:
+			state = press == 0x00? pauseButton_wait: pauseButton_press;
+			break;
+		default:
+			state = pauseButton_wait;
+			break;
+	}
+
+	switch (state) {
+		case pauseButton_wait:
+			break;
+		case pauseButton_press:
+			pause = (pause == 0) ? 1 : 0;
+			break;
+		case pauseButton_release:
+			break;
+	}
+	return state;
+}
 
 
 
