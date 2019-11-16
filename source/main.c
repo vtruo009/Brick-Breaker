@@ -1,7 +1,7 @@
 /*	Author: Van Truong
  *  	Partner(s) Name: An Pho
  *	Lab Section: 023
- *	Assignment: Lab #11  Exercise #2
+ *	Assignment: Lab #11  Exercise #1
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -12,184 +12,100 @@
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #include <avr/interrupt.h>
-#include "keypad.h"
+#include <keypad.h>
+#include <bit.h>
+#include <timer.h>
+#include <stdio.h>
 #endif
 
 //--------Task scheduler data structure--------------------------
 typedef struct _task {
-	unsigned char state;
+	signed char state;
 	unsigned long int period;
 	unsigned long int elapsedTime;
 	int (*TickFct)(int);
-} task;
+} _task;
 //--------End task scheduler data structure----------------------
 
-//--------Shared variables-------------------------------------------
-unsigned char led0_output = 0x00;
-unsigned char led1_output = 0x00;
-unsigned char pause = 0;
-//--------End shared variables----------------------------------------
+unsigned long int findGCD(unsigned long int a, unsigned long int b)
+{
+	unsigned long int c;
+	while(1){
+		c = a % b;
+		if( c == 0 ) { return b; }
+		a = b;
+		b = c;
+	}
+	return 0;
+}
 
-//-----------ENUMS and SM declarations-------------------------------
-enum pauseButtonSM_States { pauseButton_wait, pauseBUtton_press, pauseButton_release };
-int pauseButtonSMTick(int state);
+enum Keypad_States {determineOutput} keypad_state;
 
-enum toggleLED0_States { toggleLED0_wait, toggleLED0_blink };
-int toggleLED0SMTick(int state);
+int KeypadTick(int state) {
+	unsigned char x;
+	x = GetKeypadKey();
+	switch (keypad_state) {
+		case determineOutput:
+			switch(x) {
+				case '\0': PORTB = 0x1F; break; // All 5 LEDs on
+				case '1': PORTB = 0x01; break; // hex equivalent
+				case '2': PORTB = 0x02; break;
+				case '3': PORTB = 0x03; break;
+				case '4': PORTB = 0x04; break;
+				case '5': PORTB = 0x05; break;
+				case '6': PORTB = 0x06; break;
+				case '7': PORTB = 0x07; break;
+				case '8': PORTB = 0x08; break;
+				case '9': PORTB = 0x09; break;
+				case 'A': PORTB = 0x0A; break;
+				case 'B': PORTB = 0x0B; break;
+				case 'C': PORTB = 0x0C; break;
+				case 'D': PORTB = 0x0D; break;
+				case '*': PORTB = 0x0E; break;
+				case '0': PORTB = 0x00; break;
+				case '#': PORTB = 0x0F; break;
+				default: PORTB = 0x1B; break;
+			}
+		state = determineOutput;
+		break;
+	}
+	return state;
+}
 
-enum toggleLED1_States { toggleLED1_wait, toggleLED1_blink };
-int toggleLED1SMTick(int state);
-
-enum display_States { display_display };
-int displaySMTick(int state);
-//----------End ENUMS and SM declarations----------------------------
-
-//FIX LAB NUMBER ON PART 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int main(void) {
 	DDRA = 0xFF; PORTA = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
-	unsigned long systemPeriod = 500;
-	static task task1; 
-	static task task2;
-	task *tasks[] = {&task1, &task2};
-	unsigned char numTasks = sizeof(tasks)/sizeof(task*);
+
+	static _task task1; 
+	_task *tasks[] = {&task1};
+	unsigned char numTasks = sizeof(tasks)/sizeof(_task*);
 	
 	//task 1
-	task1.state = IndexInit;
-	task1.period = systemPeriod;
+	task1.state = determineOutput;
+	task1.period = 50;
 	task1.elapsedTime = task1.period;
-	task1.TickFct = &IndexTick;
-	
-	//task 2
-	task2.state = OUTPUT;
-	task2.period = systemPeriod;
-	task2.elapsedTime = task2.period;
-	task2.TickFct = &LCDTick;
-	
-	TimerSet(systemPeriod);
+	task1.TickFct = &KeypadTick;
+
+	TimerSet(50);
 	TimerOn();
-	LCD_init();
-	LCD_ClearScreen();
-	unsigned char i;
+
+	unsigned short i;
+	
     while(1) {
 	    // Scheduler code
-	    for ( i = 0; i < numTasks; i++ ) {
-		    // Task is ready to tick
-		    if ( tasks[i]->elapsedTime >= tasks[i]->period ) {
-			    // Setting next state for task
-			    tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
-			    // Reset the elapsed time for next tick.
-			    tasks[i]->elapsedTime = 0;
-		    }
-		    tasks[i]->elapsedTime += systemPeriod;
-	    }
-	    while(!TimerFlag);
-	    TimerFlag = 0;
+	for(i = 0; i < numTasks; ++i) {
+		if (tasks[i]->elapsedTime == tasks[i]->period) {
+			tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
+			tasks[i]->elapsedTime = 0;
+		}
+		tasks[i]->elapsedTime += 50;
+	}
+	while(!TimerFlag);
+	TimerFlag = 0;
     }
 	
 	return 0;
 }
-
-int pauseButtonSMTick(int state) {
-	unsigned char press = ~PINA & 0x01;
-
-	switch (state) {
-		case pauseButton_wait:
-			state = press == 0x01? pauseButton_press: pauseButton_wait;
-			break;
-		case pauseButton_press:
-			state = pauseButton_release;
-			break;
-		case pauseButton_release:
-			state = press == 0x00? pauseButton_wait: pauseButton_press;
-			break;
-		default:
-			state = pauseButton_wait;
-			break;
-	}
-
-	switch (state) {
-		case pauseButton_wait:
-			break;
-		case pauseButton_press:
-			pause = (pause == 0) ? 1 : 0;
-			break;
-		case pauseButton_release:
-			break;
-	}
-	return state;
-}
-
-int toggleLED0SMTick(int state) {
-	switch(state) {
-		case toggleLED0_wait:
-			state = !pause? toggleLED0_blink: toggleLED0_wait;
-			break;
-		case toggleLED0_blink: state = pause? toggleLED0_wait: toggleLED0_blink;
-			break;
-		default:
-			state = toggleLED0_wait;
-			break;
-
-	switch(state) {
-		case toggleLED0_wait:
-			break;
-		case toggleLED0_blink:
-			led0_output = (led0_output == 0x00) ? 0x01 : 0x00;
-			break;
-	}
-
-	return state;
-}
-
-int toggleLED1SMTick(int state) {
-	switch (state) {
-		case toggleLED1_wait:
-			state = !pause? toggledLED1_blink: toggleLED1_wait;
-			break;
-		case toggledLED1_blink:
-			state = pause? toggleLED1_wait: toggledLED1_blink;
-			break;
-		default:
-			state = toggleLED1_wait;
-			break;
-	}
-	
-	switch (state) {
-		case toggleLED1_wait:
-			break;
-		case toggleLED1_blink:
-			led1_output = (led1_output == 0x00_ ? 0x01 : 0x00;
-			break;
-	}
-	
-	return state;
-}
-
-int displaySMTick(int state) {
-	usnigned char output;
-
-	switch (state) {
-		case display_display:
-			state = display_display;
-			break;
-		default:
-			state = display_display;
-			break;
-	}
-
-	switch (state) {
-		case display_display:
-			output = led0_output | led1_output << 1;
-			break;
-	}
-
-	PORTB = output;
-	return state;
-}
-
-
-
 
 
 
