@@ -1,5 +1,5 @@
 /*	Author: Van Truong
- *  	Partner(s) Name: An Pho
+ *  Partner(s) Name: An Pho
  *	Lab Section: 023
  *	Assignment: Lab #11  Exercise #1
  *	Exercise Description: [optional - include for your own benefit]
@@ -7,112 +7,121 @@
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  */
-
+//#include <asf.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
-#include <avr/interrupt.h>
-#include <keypad.h>
+#endif
 #include <bit.h>
 #include <timer.h>
-#include <stdio.h>
-#endif
+#include <keypad.h>
+#include <scheduler.h>
+#include <io.c>
 
-//--------Task scheduler data structure--------------------------
-typedef struct _task {
-	signed char state;
-	unsigned long int period;
-	unsigned long int elapsedTime;
-	int (*TickFct)(int);
-} _task;
-//--------End task scheduler data structure----------------------
+/*unsigned char k = 0;*/
 
-unsigned long int findGCD(unsigned long int a, unsigned long int b)
-{
-	unsigned long int c;
-	while(1){
-		c = a % b;
-		if( c == 0 ) { return b; }
-		a = b;
-		b = c;
-	}
-	return 0;
-}
+/*enum Cursor_States {indexStart, incr} Cursor_State;
 
-enum Keypad_States {determineOutput} keypad_state;
+// int MoveCursor(int state) {
+// 	switch (state) {
+// 		case indexStart:
+// 			state = incr;
+// 			break;
+// 		case incr:
+// 			if (k <= 51) {
+// 				state = incr;
+// 			}
+// 			else {
+// 				state = indexStart;
+// 			}
+// 			break;
+// 	}
+// 	
+// 	switch (state) {
+// 		case indexStart:
+// 			k = 0;
+// 			break;
+// 		case incr:
+// 			++k;
+// 			break;
+// 		default:
+// 			k = 0;
+// 			break;
+// 	}
+// 	return state;	
+// }
+*/
+enum Keypad_States {determineKey} Keypad_state;
+static unsigned char letter = '\0';
 
 int KeypadTick(int state) {
-	unsigned char x;
-	x = GetKeypadKey();
-	switch (keypad_state) {
-		case determineOutput:
-			switch(x) {
-				case '\0': PORTB = 0x1F; break; // All 5 LEDs on
-				case '1': PORTB = 0x01; break; // hex equivalent
-				case '2': PORTB = 0x02; break;
-				case '3': PORTB = 0x03; break;
-				case '4': PORTB = 0x04; break;
-				case '5': PORTB = 0x05; break;
-				case '6': PORTB = 0x06; break;
-				case '7': PORTB = 0x07; break;
-				case '8': PORTB = 0x08; break;
-				case '9': PORTB = 0x09; break;
-				case 'A': PORTB = 0x0A; break;
-				case 'B': PORTB = 0x0B; break;
-				case 'C': PORTB = 0x0C; break;
-				case 'D': PORTB = 0x0D; break;
-				case '*': PORTB = 0x0E; break;
-				case '0': PORTB = 0x00; break;
-				case '#': PORTB = 0x0F; break;
-				default: PORTB = 0x1B; break;
-			}
-		state = determineOutput;
-		break;
+	switch(Keypad_state) { //determine which state we're in, but we only have one state because tick function is always getting the keypad input
+		case determineKey:
+			letter = GetKeypadKey();
+			state = determineKey;
+			break;
 	}
 	return state;
 }
 
-int main(void) {
-	DDRA = 0xFF; PORTA = 0x00;
-	DDRD = 0xFF; PORTD = 0x00;
-
-	static _task task1; 
-	_task *tasks[] = {&task1};
-	unsigned char numTasks = sizeof(tasks)/sizeof(_task*);
-	
-	//task 1
-	task1.state = determineOutput;
-	task1.period = 50;
-	task1.elapsedTime = task1.period;
-	task1.TickFct = &KeypadTick;
-
-	TimerSet(50);
-	TimerOn();
-
-	unsigned short i;
-	
-    while(1) {
-	    // Scheduler code
-	for(i = 0; i < numTasks; ++i) {
-		if (tasks[i]->elapsedTime == tasks[i]->period) {
-			tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
-			tasks[i]->elapsedTime = 0;
-		}
-		tasks[i]->elapsedTime += 50;
+enum LCD_States {display} LCD_State;
+int Display(int state) {
+	switch (state) {
+		case display:
+			LCD_Cursor(0);
+			if (letter != '\0') {
+				LCD_Cursor(1);
+				LCD_WriteData(letter);
+			}
+			state = display;
+			break;
 	}
-	while(!TimerFlag);
-	TimerFlag = 0;
-    }
-	
-	return 0;
+	return state;
 }
 
-
-
-
-
-
-
+int main(void)
+{
+	DDRC = 0xF0; PORTC = 0x0F;
+	DDRA = 0xFF; PORTA = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	//_task struct declared in scheduler.h
+	static _task task1, task2; //only one SM
+	_task *tasks[] = {&task1, &task2}; //task array with one task
+	const unsigned short numTasks = sizeof(tasks)/sizeof(_task*); //number of arrays divided by number of tasks?
+	
+	task1.state = determineKey;
+	task1.period = 500;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &KeypadTick;
+	
+	task2.state = display;
+	task2.period = 500;
+	task2.elapsedTime = task1.period;
+	task2.TickFct = &Display;
+	
+	TimerSet(500);
+	TimerOn();
+	
+	LCD_init();
+	LCD_ClearScreen();
+	
+	unsigned char i;
+    /* Replace with your application code */
+    while (1) 
+    {
+		for (i = 0; i < numTasks; ++i) {
+			if (tasks[i]->elapsedTime == tasks[i]->period) {
+				tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
+				tasks[i]->elapsedTime = 0;
+			}
+			tasks[i]->elapsedTime += 500;
+		}
+		while(!TimerFlag);
+		TimerFlag = 0;
+    }
+	return 0;
+}
 
 
 

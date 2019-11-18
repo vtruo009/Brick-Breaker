@@ -31,6 +31,6 @@ typedef struct _task{
 	unsigned long period; 		//Task period
 	unsigned long elapsedTime; 	//Time elapsed since last task tick
 	int (*TickFct)(int); 		//Task tick function
-} task;
+} _task;
 
 #endif //SCHEDULER_H
