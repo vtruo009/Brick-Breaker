@@ -37,20 +37,17 @@
 #endif
 #include <stdio.h>
 #include <timer.h>
-#include "io.c"
+#include "io.h"
 #include <avr/interrupt.h>
-#define F_CPU 8000000UL
 #include <util/delay.h>
-//#include "LCD_16x2_C_file.c"
-//#include <ADC_C.c>
-
-#include "Nokia_5110.c"
+#include "ADC_H.h"
+#include "Nokia_5110.h"
 
 
 
-void ADC_init() {
-	ADCSRA |= (1 << ADEN) | (1 << ADSC);
-}
+/*void ADC_init() {
+	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
+}*/
 
 int main (void)
 {	
@@ -60,7 +57,7 @@ int main (void)
 	DDRC = 0xFF; PORTC = 0x00;
 	
 	/* Insert application code here, after the board has been initialized. */
-	//ADC_Init();
+	ADC_init();
 	nokia_lcd_init();
 	nokia_lcd_clear();
 
@@ -70,31 +67,24 @@ int main (void)
 	
 	while(1) {
 		
-		unsigned short x = ADC_read(0);
+		/*unsigned short x = ADC_read(1);
 		unsigned char tmp = (char)x;
-		nokia_lcd_set_cursor(0,0);
-		nokia_lcd_write_char(tmp, 2);
+		PORTB = tmp;
+		nokia_lcd_set_cursor(10,10);
+		nokia_lcd_write_char(tmp, 2);*/
+
+		nokia_lcd_set_cursor(20, 20);
+		nokia_lcd_set_pixel(21, 20,1);
+		nokia_lcd_set_pixel(22, 20, 1);
+		nokia_lcd_set_pixel(23, 20,1);
+		nokia_lcd_set_pixel(21, 21,1);
+		nokia_lcd_set_pixel(22, 21, 1);
+		nokia_lcd_set_pixel(23, 21,1);
+		nokia_lcd_set_pixel(21, 22,1);
+		nokia_lcd_set_pixel(22, 22, 1);
+		nokia_lcd_set_pixel(23, 22,1);
 		nokia_lcd_render();
-// 		unsigned short x = ADC;
-// 		unsigned char tmp = (char)x;
-// 		x = (char)(x >> 4);
-// 		PORTB = tmp;
-// 		PORTD = x;
-		
-		
-		/*unsigned short x = ADC_Read(1);
-		unsigned char tmp = (char)x;
-		LCD_Cursor(1);
-		LCD_WriteData(tmp + '0');*/
-// 		unsigned short x = ADC;
-// 		x = x-512;
-// 		unsigned char tmp = (char)x;
-// 		if (tmp == 0) {
-// 			PORTB = 0x01;
-// 		}
-// 		else {
-// 			PORTB = 0x02;
-// 		}
+
 		while(1) {continue;}
 		
 	}

@@ -15,7 +15,11 @@
 #define ipin PINA
 #define iport PORTA
 
-void ADC_Init();
-int ADC_Read(char);
+/*void ADC_Init();
+int ADC_Read(char);*/
+
+void ADC_init();
+void ADC_channel(unsigned char channel);
+unsigned short ADC_read(unsigned char channel);
 
 #endif /* ADC_H_H_ */
