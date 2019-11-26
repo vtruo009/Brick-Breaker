@@ -28,7 +28,7 @@
 /*
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
-#include <asf.h>
+//#include <asf.h>
 
 
 #include <avr/io.h>
@@ -42,15 +42,15 @@
 #define F_CPU 8000000UL
 #include <util/delay.h>
 //#include "LCD_16x2_C_file.c"
-#include <ADC_C.c>
+//#include <ADC_C.c>
 
 #include "Nokia_5110.c"
 
 
 
-/*void ADC_init() {
+void ADC_init() {
 	ADCSRA |= (1 << ADEN) | (1 << ADSC);
-}*/
+}
 
 int main (void)
 {	
@@ -69,9 +69,12 @@ int main (void)
 	TimerOn();
 	
 	while(1) {
+		
+		unsigned short x = ADC_read(0);
+		unsigned char tmp = (char)x;
+		nokia_lcd_set_cursor(0,0);
+		nokia_lcd_write_char(tmp, 2);
 		nokia_lcd_render();
-		nokia_lcd_set_cursor(21,427);
-		nokia_lcd_write_char('a', 3);
 // 		unsigned short x = ADC;
 // 		unsigned char tmp = (char)x;
 // 		x = (char)(x >> 4);
