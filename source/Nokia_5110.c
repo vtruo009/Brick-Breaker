@@ -206,3 +206,11 @@ void nokia_lcd_render(void)
 		write_data(nokia_lcd.screen[i]);
 }
 
+uint8_t get_x() {
+	return nokia_lcd.cursor_x;
+}
+
+uint8_t get_y() {
+	return nokia_lcd.cursor_y;
+}
+

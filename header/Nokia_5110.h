@@ -115,6 +115,10 @@ void nokia_lcd_set_cursor(uint8_t x, uint8_t y);
  */
 void nokia_lcd_render(void);
 
-
+/*
+Added myself to access cursor value
+*/
+uint8_t get_x(void);
+uint8_t get_y(void);
 #endif /* ! __NOKIA_5110_H__ */
 

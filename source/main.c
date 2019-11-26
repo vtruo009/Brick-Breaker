@@ -43,11 +43,19 @@
 #include "ADC_H.h"
 #include "Nokia_5110.h"
 
+void DrawBall() {
+	nokia_lcd_set_cursor(43, 40);
+	unsigned char i = 0;
+	unsigned char j = 0;
+	for (i = 0; i < 3 && j < 3; ++i) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+		if (i == 2) {
+			i = 0;
+			++j;
+		}
+	}
 
-
-/*void ADC_init() {
-	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
-}*/
+}
 
 int main (void)
 {	
@@ -60,10 +68,8 @@ int main (void)
 	ADC_init();
 	nokia_lcd_init();
 	nokia_lcd_clear();
-
-	
-	TimerSet(300);
-	TimerOn();
+	DrawBall();
+	nokia_lcd_render();
 	
 	while(1) {
 		
@@ -73,20 +79,9 @@ int main (void)
 		nokia_lcd_set_cursor(10,10);
 		nokia_lcd_write_char(tmp, 2);*/
 
-		nokia_lcd_set_cursor(20, 20);
-		nokia_lcd_set_pixel(21, 20,1);
-		nokia_lcd_set_pixel(22, 20, 1);
-		nokia_lcd_set_pixel(23, 20,1);
-		nokia_lcd_set_pixel(21, 21,1);
-		nokia_lcd_set_pixel(22, 21, 1);
-		nokia_lcd_set_pixel(23, 21,1);
-		nokia_lcd_set_pixel(21, 22,1);
-		nokia_lcd_set_pixel(22, 22, 1);
-		nokia_lcd_set_pixel(23, 22,1);
-		nokia_lcd_render();
+		
 
-		while(1) {continue;}
+		//while(1) {continue;}
 		
 	}
 }
-
