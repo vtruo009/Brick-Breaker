@@ -37,24 +37,86 @@
 #endif
 #include <stdio.h>
 #include <timer.h>
-#include "io.h"
+#include "io.c"
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "ADC_H.h"
-#include "Nokia_5110.h"
+#include "ADC_C.c"
+#include "Nokia_5110.c" //change back to .h for lab computers
+
+/*-------------------------------------------------Defines-------------------------------------------------------------------------*/
+#define left_val 300
+#define right_val 700
+/*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
+enum Joystick_States {center, left, right} Joystick_State;
+void Joystick_Tick();
+/*---------------------------------------------------------------------------------------------------------------------------------*/
+
+void ADC_init() {
+	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
+}
 
 void DrawBall() {
-	nokia_lcd_set_cursor(43, 40);
-	unsigned char i = 0;
+	nokia_lcd_set_cursor(40, 43);
+	signed char i = 0;
 	unsigned char j = 0;
 	for (i = 0; i < 3 && j < 3; ++i) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
 		if (i == 2) {
-			i = 0;
+			i = -1;
 			++j;
 		}
 	}
+}
 
+void Joystick_Tick() {
+	unsigned short x = ADC;
+	switch (Joystick_State) {
+		case center:
+			if (x > left_val && x < right_val) {
+				Joystick_State = center;
+			}
+			else if (x < left_val) {
+				Joystick_State = left;
+			}
+			else if (x > right_val) {
+				Joystick_State = right;
+			}
+			break;
+		case left:
+			if (x > left_val && x < right_val) {
+				Joystick_State = center;
+			}
+			else if (x < left_val) {
+				Joystick_State = left;
+			}
+			else if (x > right_val) {
+				Joystick_State = right;
+			}
+			break;
+		case right:
+			if (x > left_val && x < right_val) {
+				Joystick_State = center;
+			}
+			else if (x < left_val) {
+				Joystick_State = left;
+			}
+			else if (x > right_val) {
+				Joystick_State = right;
+			}
+			break;
+	}
+	
+	switch (Joystick_State) {
+		case center:
+			PORTB = 0x00;
+			break;
+		case left:
+			PORTB = 0x02;
+			break;
+		case right:
+			PORTB = 0x01;
+			break;
+	}
 }
 
 int main (void)
@@ -65,22 +127,24 @@ int main (void)
 	DDRC = 0xFF; PORTC = 0x00;
 	
 	/* Insert application code here, after the board has been initialized. */
+	
 	ADC_init();
 	nokia_lcd_init();
 	nokia_lcd_clear();
 	DrawBall();
-	nokia_lcd_render();
+	
+	TimerSet(100);
+	TimerOn;
 	
 	while(1) {
-		
+		Joystick_Tick();
 		/*unsigned short x = ADC_read(1);
 		unsigned char tmp = (char)x;
 		PORTB = tmp;
 		nokia_lcd_set_cursor(10,10);
 		nokia_lcd_write_char(tmp, 2);*/
-
 		
-
+		nokia_lcd_render();
 		//while(1) {continue;}
 		
 	}
