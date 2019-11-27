@@ -37,11 +37,11 @@
 #endif
 #include <stdio.h>
 #include <timer.h>
-#include "io.c"
+#include "io.h"
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "ADC_C.c"
-#include "Nokia_5110.c" //change back to .h for lab computers
+//#include "ADC_H.h"
+#include "Nokia_5110.h" //change back to .h for lab computers
 
 /*-------------------------------------------------Defines-------------------------------------------------------------------------*/
 #define left_val 300
@@ -62,6 +62,19 @@ void DrawBall() {
 	for (i = 0; i < 3 && j < 3; ++i) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
 		if (i == 2) {
+			i = -1;
+			++j;
+		}
+	}
+}
+
+void DrawPlatform() {
+	nokia_lcd_set_cursor(36, 46);
+	signed char i = 0;
+	unsigned char j = 0;
+	for (i = 0; i < 11 && j < 2; ++i) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+		if ( i == 10) {
 			i = -1;
 			++j;
 		}
@@ -132,6 +145,7 @@ int main (void)
 	nokia_lcd_init();
 	nokia_lcd_clear();
 	DrawBall();
+	DrawPlatform();
 	
 	TimerSet(100);
 	TimerOn;
