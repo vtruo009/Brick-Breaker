@@ -41,22 +41,21 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 //#include "ADC_H.h"
-#include "Nokia_5110.h" //change back to .h for lab computers
+#include "ADC_C.c"
+#include "Nokia_5110.c" //change back to .h for lab computers
 
-/*-------------------------------------------------Defines-------------------------------------------------------------------------*/
+/*-------------------------------------------------Defines & Global Variables------------------------------------------------------*/
 #define left_val 300
 #define right_val 700
+
+signed char direction = 0; //direction flags
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
 enum Joystick_States {center, left, right} Joystick_State;
 void Joystick_Tick();
 /*---------------------------------------------------------------------------------------------------------------------------------*/
 
-void ADC_init() {
-	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
-}
-
-void DrawBall() {
-	nokia_lcd_set_cursor(40, 43);
+void DrawPlatform(signed char d) {
+	nokia_lcd_set_cursor(40 + d, 43);
 	signed char i = 0;
 	unsigned char j = 0;
 	for (i = 0; i < 3 && j < 3; ++i) {
@@ -66,17 +65,53 @@ void DrawBall() {
 			++j;
 		}
 	}
-}
-
-void DrawPlatform() {
-	nokia_lcd_set_cursor(36, 46);
-	signed char i = 0;
-	unsigned char j = 0;
-	for (i = 0; i < 11 && j < 2; ++i) {
+	nokia_lcd_set_cursor(37 + d, 46);
+	for (i = 0, j = 0; i < 9 && j < 2; ++i) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
-		if ( i == 10) {
+		if (i == 8) {
 			i = -1;
 			++j;
+		}
+	}
+}
+
+void DeleteLeftColumns(signed char d) {
+	nokia_lcd_set_cursor(40, 43);
+	signed char i = 0;
+	unsigned char j = 0;
+	for (j = 0;  i < d && j < 3; ++j) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
+		if (j == 2) {
+			j = -1;
+			++i;
+		}
+	}
+	nokia_lcd_set_cursor(37,46);
+	for (i = 0, j = 0; i < d && j < 2; ++j) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
+		if (j == 1) {
+			j = -1;
+			++i;
+		}
+	}
+}
+
+void DrawEnemies() {
+	nokia_lcd_set_cursor(1,2);
+	signed char i = 0;
+	signed char j = 0;
+	for (i = 0;i < 4 && j < 2; ++i) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+		if (i == 3) {
+			i = -1;
+			++j;
+		}
+	}
+	for (i = 1, j = -1; i < 3 && j < 3; ++i) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+		if (i == 2) {
+			i = 0;
+			j += 3;
 		}
 	}
 }
@@ -121,13 +156,16 @@ void Joystick_Tick() {
 	
 	switch (Joystick_State) {
 		case center:
-			PORTB = 0x00;
 			break;
 		case left:
-			PORTB = 0x02;
+			direction -= 1;
+			DrawPlatform(direction);
+			DeleteRightColumns(direction);
 			break;
 		case right:
-			PORTB = 0x01;
+			direction += 1;
+			DrawPlatform(direction);
+			DeleteLeftColumns(direction);
 			break;
 	}
 }
@@ -144,8 +182,8 @@ int main (void)
 	ADC_init();
 	nokia_lcd_init();
 	nokia_lcd_clear();
-	DrawBall();
-	DrawPlatform();
+	DrawPlatform(direction);
+	DrawEnemies();
 	
 	TimerSet(100);
 	TimerOn;
