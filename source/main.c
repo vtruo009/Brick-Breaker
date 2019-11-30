@@ -48,7 +48,7 @@
 #define left_val 300
 #define right_val 700
 
-signed char direction = 0; //direction flags
+signed int direction = 0; //direction flags
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
 enum Joystick_States {center, left, right} Joystick_State;
 void Joystick_Tick();
@@ -75,10 +75,10 @@ void DrawPlatform(signed char d) {
 	}
 }
 
-void DeleteLeftColumns(signed char d) {
+void DeleteLeftColumns(signed int d) {
 	nokia_lcd_set_cursor(40, 43);
-	signed char i = 0;
-	unsigned char j = 0;
+	signed int i = 0;
+	unsigned int j = 0;
 	for (j = 0;  i < d && j < 3; ++j) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
 		if (j == 2) {
@@ -95,6 +95,28 @@ void DeleteLeftColumns(signed char d) {
 		}
 	}
 }
+
+/*void DeleteRightColumns(signed int d) {
+	nokia_lcd_set_cursor(42,43);
+	signed int j = 0;
+	unsigned int i =  -3;
+	for (j = 0; (i < d) && (j < 3); ++j) {
+		nokia_lcd_set_pixel(get_x() - i, get_y() + j, 0);
+		if (j == 2) {
+			j = -1;
+			++i;
+		}
+	}
+	nokia_lcd_set_cursor(45,46);
+	for (i = 0, j = 0; (i < d) && (j < 2); ++j) {
+		nokia_lcd_set_pixel(get_x() - i, get_y() + j, 0);
+		if (j == 1) {
+			j = -1;
+			++i;
+		}
+	}
+	
+}*/
 
 void DrawEnemies() {
 	nokia_lcd_set_cursor(1,2);
@@ -160,7 +182,7 @@ void Joystick_Tick() {
 		case left:
 			direction -= 1;
 			DrawPlatform(direction);
-			DeleteRightColumns(direction);
+			//DeleteRightColumns(direction);
 			break;
 		case right:
 			direction += 1;
