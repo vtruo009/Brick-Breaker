@@ -47,6 +47,7 @@
 /*-------------------------------------------------Defines & Global Variables------------------------------------------------------*/
 #define left_val 300
 #define right_val 700
+#define button ~PINA & 0x08;
 
 signed int direction = 0; //direction flags
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
@@ -54,7 +55,7 @@ enum Joystick_States {center, left, right} Joystick_State;
 void Joystick_Tick();
 /*---------------------------------------------------------------------------------------------------------------------------------*/
 
-void DrawPlatform(signed char d) {
+void DrawPlatform(signed int d) {
 	nokia_lcd_set_cursor(40 + d, 43);
 	signed char i = 0;
 	unsigned char j = 0;
@@ -78,8 +79,7 @@ void DrawPlatform(signed char d) {
 void DeleteLeftColumns(signed int d) {
 	nokia_lcd_set_cursor(40, 43);
 	signed int i = 0;
-	unsigned int j = 0;
-	for (j = 0;  i < d && j < 3; ++j) {
+	for (signed int j = 0;  (i < d) && (j < 3); ++j) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
 		if (j == 2) {
 			j = -1;
@@ -87,7 +87,8 @@ void DeleteLeftColumns(signed int d) {
 		}
 	}
 	nokia_lcd_set_cursor(37,46);
-	for (i = 0, j = 0; i < d && j < 2; ++j) {
+	i = 0;
+	for (signed int j = 0; (i < d) && (j < 2); ++j) {
 		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
 		if (j == 1) {
 			j = -1;
@@ -96,27 +97,26 @@ void DeleteLeftColumns(signed int d) {
 	}
 }
 
-/*void DeleteRightColumns(signed int d) {
+void DeleteRightColumns(signed int d) {
 	nokia_lcd_set_cursor(42,43);
-	signed int j = 0;
-	unsigned int i =  -3;
-	for (j = 0; (i < d) && (j < 3); ++j) {
-		nokia_lcd_set_pixel(get_x() - i, get_y() + j, 0);
+	signed int i = 0;
+	for (signed int j = 0; (i > d) && (j < 3); ++j) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
 		if (j == 2) {
 			j = -1;
-			++i;
+			--i;
 		}
 	}
 	nokia_lcd_set_cursor(45,46);
-	for (i = 0, j = 0; (i < d) && (j < 2); ++j) {
-		nokia_lcd_set_pixel(get_x() - i, get_y() + j, 0);
+	i = 0;
+	for (signed int j = 0; (i > d) && (j < 3); ++j) {
+		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
 		if (j == 1) {
 			j = -1;
-			++i;
+			--i;
 		}
 	}
-	
-}*/
+}
 
 void DrawEnemies() {
 	nokia_lcd_set_cursor(1,2);
@@ -136,6 +136,11 @@ void DrawEnemies() {
 			j += 3;
 		}
 	}
+}
+
+void DrawBullet() {
+	nokia_lcd_set_pixel(get_x(), get_y(), 1);
+	nokia_lcd_set_pixel(get_x(), get_y() - 1, 1);
 }
 
 void Joystick_Tick() {
@@ -182,7 +187,7 @@ void Joystick_Tick() {
 		case left:
 			direction -= 1;
 			DrawPlatform(direction);
-			//DeleteRightColumns(direction);
+			DeleteRightColumns(direction);
 			break;
 		case right:
 			direction += 1;
@@ -191,6 +196,7 @@ void Joystick_Tick() {
 			break;
 	}
 }
+
 
 int main (void)
 {	
