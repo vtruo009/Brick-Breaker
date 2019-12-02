@@ -1,0 +1,19 @@
+void Enemies_Tick() {
+	unsigned char i, j, a, matched;
+	if (fired) {
+		for (i = 0; i < 8; ++i) {
+			for (j = 0; j < 15; ++j) {
+				if (enemiesPos[i] == bullerPos[j]) {
+					matched = i;
+				}
+			}
+		}
+	}
+	for (a = 0; a < 8; ++a) {
+		if (a != matched) {
+			nokia_lcd_set_cursor(10*a + 4, 2);
+			enemiesPos[a] = 10*a + 3;
+			DrawEnemies();
+		}
+	 }
+}
