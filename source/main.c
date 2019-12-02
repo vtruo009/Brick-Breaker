@@ -53,6 +53,7 @@
 
 signed int direction = 0; //direction flags
 unsigned char shot = 0;
+unsigned char enemiesPos[8];
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
 enum Joystick_States {center, left, right} Joystick_State;
 void Joystick_Tick();
@@ -222,8 +223,9 @@ void Joystick_Tick() {
 			}
 			break;
 	}
- 	for (unsigned char a = 0; a < 5; ++a) {
+ 	for (unsigned char a = 0; a < 8; ++a) {
 		nokia_lcd_set_cursor(10*a + 4, 2);
+		enemiesPos[a] = 10*a + 3;
 		DrawEnemies();
 	 }
 	nokia_lcd_render();
@@ -317,7 +319,6 @@ int main (void)
 			}
 			tasks[i]->elapsedTime += 100;
 		}
-		//DrawBullet(shot);
 // 		int i, j;
 // 		for (i = 0; i < 30; ++i){
 // 			for (j = 0; j < 3000; ++j);
