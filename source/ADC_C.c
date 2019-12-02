@@ -30,7 +30,7 @@ int ADC_Read(char channel)
 }*/
 
 void ADC_init(){
-	ADCSRA |= (1 << ADEN) | (1 << ADSC);
+	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
 }
 
 void ADC_channel(unsigned char channel){

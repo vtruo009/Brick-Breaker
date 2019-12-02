@@ -41,9 +41,9 @@
 #include "io.h"
 #include <avr/interrupt.h>
 #include <util/delay.h>
-//#include "ADC_H.h"
-#include "ADC_C.c"
-#include "Nokia_5110.c" //change back to .h for lab computers
+#include "ADC_H.h"
+//#include "ADC_C.c"
+#include "Nokia_5110.h" //change back to .h for lab computers
 #include "scheduler.h"
 
 /*-------------------------------------------------Defines & Global Variables------------------------------------------------------*/
@@ -165,9 +165,7 @@ void DrawEnemies() {
 
 void Joystick_Tick() {
 	unsigned short x = ADC;
-	switch (Joystick_State) {
-		case center:
-			if (x > left_val && x < right_val) {
+	if (x > left_val && x < right_val) {
 				Joystick_State = center;
 			}
 			else if (x < left_val) {
@@ -176,30 +174,6 @@ void Joystick_Tick() {
 			else if (x > right_val) {
 				Joystick_State = right;
 			}
-			break;
-		case left:
-			if (x > left_val && x < right_val) {
-				Joystick_State = center;
-			}
-			else if (x < left_val) {
-				Joystick_State = left;
-			}
-			else if (x > right_val) {
-				Joystick_State = right;
-			}
-			break;
-		case right:
-			if (x > left_val && x < right_val) {
-				Joystick_State = center;
-			}
-			else if (x < left_val) {
-				Joystick_State = left;
-			}
-			else if (x > right_val) {
-				Joystick_State = right;
-			}
-			break;
-	}
 	
 	switch (Joystick_State) {
 		case center:
@@ -207,6 +181,7 @@ void Joystick_Tick() {
 			DrawPlatform();
 			break;
 		case left:
+				PORTB = 0xFF;
 			--direction;
 			if (get_rect_start_x() + direction >= 0) {
 				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
@@ -223,7 +198,8 @@ void Joystick_Tick() {
 			}
 			break;
 	}
- 	for (unsigned char a = 0; a < 8; ++a) {
+	unsigned char a;
+ 	for (a = 0; a < 8; ++a) {
 		nokia_lcd_set_cursor(10*a + 4, 2);
 		enemiesPos[a] = 10*a + 3;
 		DrawEnemies();
@@ -233,6 +209,7 @@ void Joystick_Tick() {
 
 void Shoot_Tick() {
 	unsigned char shot;
+	unsigned char i;
 	switch (Shoot_state) {
 		case wait:
 			if (button) {
@@ -262,7 +239,7 @@ void Shoot_Tick() {
 		case shoot:
 			//shot = 1;
 			//DrawBullet(++shot);
-			for(unsigned char i = 0; i < 45; ++i) {
+			for(i = 0; i < 45; ++i) {
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - i, 1);
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - i, 1);
 				if (i > 0) { 
