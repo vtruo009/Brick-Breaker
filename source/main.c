@@ -36,6 +36,7 @@
 #include "simAVRHeader.h"
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <timer.h>
 #include "io.h"
 #include <avr/interrupt.h>
@@ -43,26 +44,24 @@
 //#include "ADC_H.h"
 #include "ADC_C.c"
 #include "Nokia_5110.c" //change back to .h for lab computers
+#include "scheduler.h"
 
 /*-------------------------------------------------Defines & Global Variables------------------------------------------------------*/
 #define left_val 300
 #define right_val 700
-#define button ~PINA & 0x08;
+#define button ~PINA & 0x08
 
 signed int direction = 0; //direction flags
+unsigned char shot = 0;
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
 enum Joystick_States {center, left, right} Joystick_State;
 void Joystick_Tick();
+
+enum Shoot_States {wait, shoot} Shoot_state;
+void Shoot_Tick();
 /*---------------------------------------------------------------------------------------------------------------------------------*/
 
-void DrawPlatform(signed int d) {
-// 	if ((get_rect_start_x() + d) > 75) {
-// 		nokia_lcd_set_rect_start(75, 46);
-// 	}
-// 	else if ((get_rect_start_x() + d) < 0) {
-// 		nokia_lcd_set_rect_start(0, 46);
-// 	}
-
+void DrawPlatform(/*signed int d*/) {
 	signed char i = 0;
 	unsigned char j = 0;
 // 	for (i = 0; i < 3 && j < 3; ++i) {
@@ -72,96 +71,95 @@ void DrawPlatform(signed int d) {
 // 			++j;
 // 		}
 // 	}
-	//nokia_lcd_set_cursor(37 + d, 46);
-	//nokia_lcd_set_cursor(get_rect_start_x(), get_rect_start_y());
 	for (i = 0, j = 0; i < 9 && j < 2; ++i) {
-		nokia_lcd_set_pixel(get_rect_start_x() + d + i, get_rect_y() + j, 1);
+		nokia_lcd_set_pixel(get_rect_start_x() /*+ d*/ + i, get_rect_y() + j, 1);
 		if (i == 8) {
 			i = -1;
 			++j;
 		}
 	}
-	
-	nokia_lcd_set_rect_start(get_rect_start_x() + d, 46);
-	//nokia_lcd_set_block_start(get_block_start_x() + d, 43);
 }
 
-void DeleteLeftColumns(signed int d) {
-	//nokia_lcd_set_cursor(40, 43);
-	signed int i = 0;
-// 	for (signed int j = 0;  (i < d) && (j < 3); ++j) {
-// 		//nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
-// 		nokia_lcd_set_pixel(get_block_start_x() + i, get_block_y() + j, 0);
-// 		if (j == 2) {
-// 			j = -1;
-// 			++i;
-// 		}
-// 	}
-	//nokia_lcd_set_cursor(37,46);
-	i = 0;
-	for (signed int j = 0; (i < d) && (j < 2); ++j) {
-		//nokia_lcd_set_pixel(get_x() + i, get_y() + j, 0);
-		nokia_lcd_set_pixel(get_rect_start_x() + i, get_rect_y() + j, 0);
-		if (j == 1) {
-			j = -1;
-			++i;
-		}
-	}
-	//set new cursors
-// 	nokia_lcd_set_block_start(40+d,43);
-// 	nokia_lcd_set_block_end(42+d, 43);
-// 	nokia_lcd_set_rect_start(37+d,46);
-// 	nokia_lcd_set_rect_end(45+d, 46);
-}
-
-void DeleteRightColumns(signed int d)  {
-	//nokia_lcd_set_cursor(42,43);																																																						
-	signed int i = 0;
-// 	for (signed int j = 0; (i > d) && (j < 3); ++j) {
-// 		nokia_lcd_set_pixel(get_block_end_x() + i, get_block_y() + j, 0);
-// 		if (j == 2) {
-// 			j = -1;
-// 			--i;
-// 		}
-// 	}
-	//nokia_lcd_set_cursor(45,46);
-	i = 0;
-	for (signed int j = 0; (i > d) && (j < 2); ++j) {
-		nokia_lcd_set_pixel(get_rect_end_x() + i, get_rect_y() + j, 0);
-		if (j == 1) {
-			j = -1;
-			--i;
-		}
-	}
-	//set new cursors
-// 	nokia_lcd_set_block_start(40+d,43);
-// 	nokia_lcd_set_block_end(42+d, 43);
-// 	nokia_lcd_set_rect_start(37+d,46);
-// 	nokia_lcd_set_rect_end(45+d, 46);
-// 	nokia_lcd_set_block_start(get_block_start_x() + d,43);
-// 	nokia_lcd_set_block_end(get_block_end_x() + d, 43);
-// 	nokia_lcd_set_rect_start(get_rect_start_x() + d,46);
-// 	nokia_lcd_set_rect_end(get_rect_end_x()+d, 46);
-}
-
-void DrawEnemies() {
-	nokia_lcd_set_cursor(1,2);
-	signed char i = 0;
-	signed char j = 0;
-	for (i = 0;i < 4 && j < 2; ++i) {
-		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
-		if (i == 3) {
+void ClearBullet() {
+	unsigned char i, j;
+	for (i = 0; (i < 3) && (j < 3); ++i) {
+		nokia_lcd_set_pixel(get_block_start_x(), get_block_y(), 0);
+		if (i == 2) {
 			i = -1;
 			++j;
 		}
 	}
-	for (i = 1, j = -1; i < 3 && j < 3; ++i) {
-		nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
-		if (i == 2) {
-			i = 0;
-			j += 3;
-		}
+}
+
+void DrawBullet(unsigned char count) {
+	signed char i , j;
+// 	if (!fire) {
+// 		for (i = 0; i < 3 && j < 3; ++i) {
+// 			nokia_lcd_set_pixel(get_block_start_x() + i, get_block_y() + j, 1);
+// 			if (i == 2) {
+// 				i = -1;
+// 				++j;
+// 			}
+// 		}
+// 	}
+// 	else {
+		//nokia_lcd_set_cursor(10,10);
+// 	for (unsigned char k = 0; k < 38; ++k) {
+// 		nokia_lcd_set_block_start(get_block_start_x(), get_block_y() - k);
+// 		for (i = 0, j = 0; (i < 3) && (j < 3); ++i) {
+// 			PORTB = 0x05;
+// 			nokia_lcd_set_pixel(get_block_start_x() + i, get_block_y() + j, 1);
+// 			if (i == 2) {
+// 				i = -1;
+// 				++j;
+// 			}
+// 		}
+// 	}
+	
+// 	for (unsigned char k = 0; k < 38; ++k) {
+// 		nokia_lcd_clear();
+// 		nokia_lcd_set_cursor(get_block_start_x(), get_block_y - 1);
+// 		for (i = 0, j = 0; (i < 3) && (j < 3); ++i) {
+// 			PORTB = 0x05;
+// 			nokia_lcd_set_pixel(get_block_start_x() + i, get_block_y() + j, 1);
+// 			if (i == 2) {
+// 				i = -1;
+// 				++j;
+// 			}
+// 		}
+// 	}
+	//}
+// 	nokia_lcd_set_pixel(41, 44, 1);
+// 	nokia_lcd_set_pixel(41, 45, 1);
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - count, 1);
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - count, 1);
+	if (count > 0) {
+		nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - count, 0);
 	}
+	nokia_lcd_render();
+}
+
+void DrawEnemies() {
+	//nokia_lcd_set_cursor(1,2);
+	signed char i = 0;
+	signed char j = 0;
+// 	for (unsigned char a = 0; a < 5; ++a) {
+// 		nokia_lcd_set_cursor(10*a + 4, 2);
+		for (j = 0; i < 2 && j < 4; ++ j) {
+			nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+			if (j == 3) {
+				j = -1;
+				++i;
+			}
+		}
+		for (i = -1, j = 1; i < 3 && j < 3; ++j) {
+			nokia_lcd_set_pixel(get_x() + i, get_y() + j, 1);
+			if (j == 2) {
+				j = 0;
+				i += 3;
+			}
+		}
+	//}
 }
 
 void Joystick_Tick() {
@@ -205,28 +203,77 @@ void Joystick_Tick() {
 	switch (Joystick_State) {
 		case center:
 			direction = 0;
+			DrawPlatform();
 			break;
 		case left:
-			//direction -= 1;
 			--direction;
-			if ((direction + get_rect_start_x()) >= 0) {
-				
+			if (get_rect_start_x() + direction >= 0) {
+				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
 				nokia_lcd_clear();
-				DrawPlatform(direction);
+				DrawPlatform(/*direction*/);
 			}
 			break;
 		case right:
-			//direction += 1;
 			++direction;
-			if (get_rect_start_x() < 75) {
+			if (get_rect_start_x() + direction <= 75) {
+				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
 				nokia_lcd_clear();
-				DrawPlatform(direction);
+				DrawPlatform(/*direction*/);
 			}
+			break;
+	}
+ 	for (unsigned char a = 0; a < 5; ++a) {
+		nokia_lcd_set_cursor(10*a + 4, 2);
+		DrawEnemies();
+	 }
+	nokia_lcd_render();
+}
+
+void Shoot_Tick() {
+	unsigned char shot;
+	switch (Shoot_state) {
+		case wait:
+			if (button) {
+				Shoot_state = shoot;
+			}
+			else {
+				Shoot_state = wait;
+			}
+			break;
+		case shoot:
+			if (button) {
+				Shoot_state = shoot;
+			}
+			else {
+				Shoot_state = wait;
+			}
+			break;
+		default:
+			Shoot_state = wait;
+	}
+	
+	switch (Shoot_state) {
+		case wait:
+			//shot = 0;
+			DrawBullet(shot);
+			break;
+		case shoot:
+			//shot = 1;
+			//DrawBullet(++shot);
+			for(unsigned char i = 0; i < 45; ++i) {
+				nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - i, 1);
+				nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - i, 1);
+				if (i > 0) { 
+					nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - i, 0);
+				}
+			}
+// 			nokia_lcd_set_pixel(41, 44, 0);
+// 			nokia_lcd_set_pixel(41, 45, 0);
+		default:
 			break;
 	}
 	nokia_lcd_render();
 }
-
 
 int main (void)
 {	
@@ -236,26 +283,47 @@ int main (void)
 	DDRC = 0xFF; PORTC = 0x00;
 	
 	/* Insert application code here, after the board has been initialized. */
+	static _task task1, task2; //only one SM
+	_task *tasks[] = {&task1, &task2}; //task array with one task
+	const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
+	
+	task1.state = center;
+	task1.period = 100;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &Joystick_Tick;
+	
+	task2.state = wait;
+	task2.period = 300;
+	task2.elapsedTime = task2.period;
+	task2.TickFct = &Shoot_Tick;
+	
+// 	for (unsigned char a = 0; a < 5; ++a) {
+// 		nokia_lcd_set_cursor(10*a + 4, 2);
+//  	DrawEnemies();
+// 	}
+	
+	TimerSet(100);
+	TimerOn();
 	
 	ADC_init();
 	nokia_lcd_init();
-	DrawPlatform(direction);
-	DrawEnemies();
 	
-// 	TimerSet(300);
-// 	TimerOn();
-	
+	unsigned char i;
 	while(1) {
-		
-		Joystick_Tick();
-		
-		int i, j;
-		for (i = 0; i < 60; ++i){
-			for (j = 0; j < 3000; ++j);
+		for (i = 0; i < numTasks; ++i) {
+			if (tasks[i]->elapsedTime == tasks[i]->period) {
+				tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
+				tasks[i]->elapsedTime = 0;
+			}
+			tasks[i]->elapsedTime += 100;
 		}
-// 		while(!TimerFlag);
-// 		TimerFlag = 0;
+		//DrawBullet(shot);
+// 		int i, j;
+// 		for (i = 0; i < 30; ++i){
+// 			for (j = 0; j < 3000; ++j);
+// 		}
+		while(!TimerFlag);
+		TimerFlag = 0;
 		//while(1) {continue;}
-		
 	}
 }

@@ -120,5 +120,15 @@ Added myself to access cursor value
 */
 uint8_t get_x(void);
 uint8_t get_y(void);
+void nokia_lcd_set_block_end(uint8_t x, uint8_t y);
+void nokia_lcd_set_block_start(uint8_t x, uint8_t y);
+void nokia_lcd_set_rect_end(uint8_t x, uint8_t y);
+void nokia_lcd_set_rect_start(uint8_t x, uint8_t y);
+uint8_t get_block_start_x();
+uint8_t get_block_end_x();
+uint8_t get_block_y();
+uint8_t get_rect_start_x();
+uint8_t get_rect_end_x();
+uint8_t get_rect_y();
 #endif /* ! __NOKIA_5110_H__ */
 

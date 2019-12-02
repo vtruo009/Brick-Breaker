@@ -31,11 +31,9 @@ static struct {
     uint8_t cursor_x;
     uint8_t cursor_y;
 	
-	uint8_t cursor_block_end_x;
 	uint8_t cursor_block_start_x;
 	uint8_t cursor_block_y;
 	
-	uint8_t cursor_rect_end_x;
 	uint8_t cursor_rect_start_x;
 	uint8_t cursor_rect_y;
 
@@ -43,10 +41,8 @@ static struct {
     .cursor_x = 0,
     .cursor_y = 0,
     .cursor_block_start_x = 40,
-	.cursor_block_end_x = 42,
 	.cursor_block_y = 43,
 	.cursor_rect_start_x = 37,
-	.cursor_rect_end_x = 45,
 	.cursor_rect_y = 46
 };// -------------------------------------------------------
 
@@ -233,26 +229,13 @@ void nokia_lcd_set_block_start(uint8_t x, uint8_t y) {
 	nokia_lcd.cursor_block_y = y;
 }
 
-void nokia_lcd_set_block_end(uint8_t x, uint8_t y) {
-	nokia_lcd.cursor_block_end_x = x;
-	nokia_lcd.cursor_block_y = y;
-}
-
 void nokia_lcd_set_rect_start(uint8_t x, uint8_t y) {
 	nokia_lcd.cursor_rect_start_x = x;
-	nokia_lcd.cursor_rect_y = y;
-}
-void nokia_lcd_set_rect_end(uint8_t x, uint8_t y) {
-	nokia_lcd.cursor_rect_end_x = x;
 	nokia_lcd.cursor_rect_y = y;
 }
 
 uint8_t get_block_start_x() {
 	return nokia_lcd.cursor_block_start_x;
-}
-
-uint8_t get_block_end_x() {
-	return nokia_lcd.cursor_block_end_x;
 }
 
 uint8_t get_block_y() {
@@ -261,10 +244,6 @@ uint8_t get_block_y() {
 
 uint8_t get_rect_start_x() {
 	return nokia_lcd.cursor_rect_start_x;
-}
-
-uint8_t get_rect_end_x() {
-	return nokia_lcd.cursor_rect_end_x;
 }
 
 uint8_t get_rect_y() {
