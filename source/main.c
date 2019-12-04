@@ -56,10 +56,12 @@ unsigned char fired = 0; //reset after draw bullet
 unsigned char start_game = 0;
 unsigned char bulletCount = 0;
 unsigned char reset = 0;
-unsigned char e_count = 0;
+unsigned char won_game = -1; //0 = lost 1 = win
+unsigned char numEnemiesLeft = 8;
 unsigned char enemy_to_skip[8] = {-1};
-unsigned char enemiesPos[8];
+unsigned char enemiesPos[8] = {-1};
 unsigned char bulletPos;
+unsigned char p;
 
 	
 static _task task1, task2, task3, task4, task5;
@@ -81,6 +83,9 @@ int Bullet_Tick(int state);
 
 enum Enemies_States {enemies_wait, draw_enemies};
 int Enemies_Tick(int state);
+
+enum DetermineWin_States {determine_wait, win};
+int DetermineWin_Tick(int state);
 
 void DrawEnemies(); //declaration
 /*---------------------------------------------------------------------------------------------------------------------------------*/
@@ -158,8 +163,32 @@ void CheckPosition() {
 		if (bulletPos == enemiesPos[i]) {
 			PORTB = 0x01;
 			enemy_to_skip[i] = i;
+			--numEnemiesLeft;
+			nokia_lcd_clear();
+			if (!numEnemiesLeft) {
+				PORTB = 0x01;
+				won_game = 1;
+			}
 			break;
 		}
+	}
+}
+
+void DetermineWin() {
+	if (won_game == 1) {
+		nokia_lcd_clear();
+		start_game = 0;
+		nokia_lcd_set_cursor(18, 3);
+		nokia_lcd_write_char('Y', 3);
+		nokia_lcd_write_char('O', 3);
+		nokia_lcd_write_char('U', 3);
+		
+		nokia_lcd_set_cursor(15, 26);
+		nokia_lcd_write_char('W', 3);
+		nokia_lcd_write_char('I', 3);
+		nokia_lcd_write_char('N', 3);
+		
+		nokia_lcd_write_char('!', 3);
 	}
 }
 
@@ -171,8 +200,13 @@ void InitializeGame() {
 	fired = 0; //reset after draw bullet
 	start_game = 0;
 	bulletCount = 0;
+	won_game = -1; //0 = lost 1 = win
 	//reset = 0;
-	enemiesPos[8] = -1;
+	numEnemiesLeft = 8;
+	//enemiesPos[8] = -1;
+	for (p = 0; p < 8; ++p) {
+		enemy_to_skip[p] = -1;
+	}
 	bulletPos = -1;
 	
 	task1.state = easy;
@@ -383,6 +417,7 @@ int Bullet_Tick(int state) {
 			if (bulletCount > 32/*47*/) { //bullet reaching enemy
 				ClearBullet();
 				CheckPosition();
+				DetermineWin();
 				bulletCount = 0;
 				fired = 0;
 				state = bullet_wait;
@@ -410,7 +445,7 @@ int Enemies_Tick(int state) { //draw the line of enemies
 	return draw_enemies;
 }
 
-void Score_Tick() {
+void Score_Tick() { //just a function to update score
 	nokia_lcd_set_cursor(0,0);
 	nokia_lcd_write_string("SCORE: ", 1);
 }
@@ -447,12 +482,13 @@ int main (void)
 	task5.elapsedTime = task5.period;
 	task5.TickFct = &Enemies_Tick;
 	
+	
 	TimerSet(25);
 	TimerOn();
 	
 	ADC_init();
 	nokia_lcd_init();
-	
+
 	unsigned char i;
 	while(1) {
 		for (i = 0; i < numTasks; ++i) {
