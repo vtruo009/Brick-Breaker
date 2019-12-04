@@ -324,11 +324,15 @@ int Bullet_Tick(int state) {
 		case hold:
 			break;
 		case draw:
-			if (!reset && fired) {
+			/*if (!reset && fired) {*/
+				if (reset) {
+					bulletCount = 48;
+				}
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
 				bulletPos[bulletIndex] = get_rect_start_x + 4;
 				++bulletIndex;
+				
 				if (bulletCount > 0) {
 					nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
 				}
@@ -338,7 +342,7 @@ int Bullet_Tick(int state) {
 					fired = 0;
 					state = hold;
 				}
-			}
+			//}
 	}
 	return state;
 }
