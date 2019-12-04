@@ -72,18 +72,19 @@ void Enemies_Tick() {
 #define left_val 300
 #define right_val 700
 //#define button ~PINA & 0x08
-//typedef enum bool {false, true} bool;
-	
+
 signed int direction = 0; //direction flags
 unsigned char fired = 0; //reset after draw bullet
 unsigned char start_game = 0;
 unsigned char bulletCount = 0;
-unsigned char bulletIndex = 0;
 unsigned char reset = 0;
-unsigned char score = 0;
-//unsigned char enemy_to_skip = -1;
-unsigned char enemiesPos[8];
-unsigned int bulletPos[10] = {-1};
+unsigned char won_game = -1; //0 = lost 1 = win
+unsigned char numEnemiesLeft = 8;
+unsigned char enemy_to_skip[8] = {-1};
+unsigned char enemiesPos[8] = {-1};
+unsigned char bulletPos;
+unsigned char msg_timer = 0;
+unsigned char p;
 
 	
 static _task task1, task2, task3, task4, task5/*, task6*/;
@@ -94,25 +95,23 @@ const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
 enum Menu_States {easy, medium, start_pressed, game_started} Menu_state;
 int Menu_Tick(int state);
 
+// enum Msg_States {msg_wait, display_msg};
+// int DisplayMsg(int state);
+
 enum Joystick_States {joystick_wait, center, left, right};
 int Joystick_Tick(int state);
 
 enum Button_States {button_wait, wait, fire_pressed, reset_pressed};
 int Button_Tick(int state);
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 enum Bullet_States {bullet_wait, draw};
 int Bullet_Tick(int state);
 
 enum Enemies_States {enemies_wait, draw_enemies};
 int Enemies_Tick(int state);
 
-// enum Check_Attack_States {empty, check};
-// int Check_Attack_Tick(int state);
-
-// enum DisplayScore_States {display, DisplayScore_wait};
-// int DisplayScore_Tick(int state);
-
-//bool Check_Attack();
+enum DetermineWin_States {determine_wait, win};
+int DetermineWin_Tick(int state);
 
 void DrawEnemies(); //declaration
 /*---------------------------------------------------------------------------------------------------------------------------------*/
@@ -157,6 +156,11 @@ void DrawBullet() {
 	nokia_lcd_set_pixel(get_rect_start_x() + 4, 45, 1);
 }
 
+void ClearBullet() {
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, get_rect_y() - 33, 0);
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, get_rect_y() - 34, 0);
+}
+
 void DrawEnemies() {
 	signed char i = 0;
 	signed char j = 0;
@@ -179,6 +183,42 @@ void DrawEnemies() {
 	//}
 }
 
+void CheckPosition() {
+	unsigned char i;
+	for (i = 0; i < 8; ++i) {
+/*		if (bulletPos == enemiesPos[i]) {*/
+		if ((bulletPos >= enemiesPos[i]) && (bulletPos <= enemiesPos[i] + 4)) {
+			PORTB = 0x01;
+			enemy_to_skip[i] = i;
+			--numEnemiesLeft;
+			nokia_lcd_clear();
+			if (!numEnemiesLeft) {
+				PORTB = 0x01;
+				won_game = 1;
+			}
+			break;
+		}
+	}
+}
+
+void DetermineWin() {
+	if (won_game == 1) {
+		nokia_lcd_clear();
+		start_game = 0;
+		nokia_lcd_set_cursor(18, 3);
+		nokia_lcd_write_char('Y', 3);
+		nokia_lcd_write_char('O', 3);
+		nokia_lcd_write_char('U', 3);
+		
+		nokia_lcd_set_cursor(15, 26);
+		nokia_lcd_write_char('W', 3);
+		nokia_lcd_write_char('I', 3);
+		nokia_lcd_write_char('N', 3);
+		
+		nokia_lcd_write_char('!', 3);
+	}
+}
+
 void InitializeGame() {
 	nokia_lcd_set_cursor(0,0);
 	nokia_lcd_set_rect_start(37,46);
@@ -187,13 +227,14 @@ void InitializeGame() {
 	fired = 0; //reset after draw bullet
 	start_game = 0;
 	bulletCount = 0;
-	bulletIndex = 0;
-//	reset = 0;
-//	score = 0;
-//	enemy_to_skip = -1;
+	won_game = -1; //0 = lost 1 = win
 	//reset = 0;
-	enemiesPos[8] = -1;
-	bulletPos[15] = -1;
+	numEnemiesLeft = 8;
+	//enemiesPos[8] = -1;
+	for (p = 0; p < 8; ++p) {
+		enemy_to_skip[p] = -1;
+	}
+	bulletPos = -1;
 	
 	task1.state = easy;
 	task1.period = 100;
@@ -220,12 +261,32 @@ void InitializeGame() {
 	task5.elapsedTime = task5.period;
 	task5.TickFct = &Enemies_Tick;
 	
-// 	task6.state = DisplayScore_wait;
-// 	task6.period = 25;
-// 	task6.elapsedTime = task6.period;
-// 	task6.TickFct = &DisplayScore_Tick;
-	
 }
+
+// int DisplayMsg(int state) {
+// 	if (msg_timer > 80 || !start_game) {
+// 		return msg_wait;
+// 	}
+// 	
+// 	switch (state) {
+// 		case msg_wait:
+// 			break;
+// 		case display_msg:
+// 			if (msg_timer < 80) {
+// 				nokia_lcd_set_cursor(20,20);
+// 				nokia_lcd_write_string("hi",1);
+// 				++msg_timer;
+// 				state = display_msg;
+// 			}
+// 			else if (msg_timer > 80) {
+// 				nokia_lcd_clear();
+// 				msg_timer = 80;
+// 				state = msg_wait;
+// 			}
+// 			break;
+// 	}
+// 	return state;
+// }
 
 int Menu_Tick(int state) {
 	unsigned short x = ADC;
@@ -375,107 +436,83 @@ int Button_Tick(int state) {
 	return state;
 }
 
-// int Bullet_Tick(int state) {
-// 	switch (state) {
-// 		case bullet_wait:
-// 			if (fired) {
-// 				state = draw;
-// 			}
-// 			break;
-// 		case draw:
-// 			if (!fired) {
-// 				state = bullet_wait;
-// 			}
-// 			break;
-// 	}
-// 	switch (state) {
-// 		case bullet_wait:
-// 			break;
-// 		case draw:
-// 			if (reset) {
-// 				bulletCount = 48;
-// 			}
-// 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
-// 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
-// 			bulletPos[bulletIndex] = get_rect_start_x + 4;
-// 			++bulletIndex;
-// 			if (bulletCount > 0) {
-// 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
-// 			}
-// 			++bulletCount;
-// 			/*if (bulletCount == 33) {
-// 				if (Check_Attack()) {
-// 					bulletCount = 0;
-// 					fired = 0;
-// 					state = bullet_wait;
-// 				}
-// 			}*/
-// 			if (bulletCount > 47) {
-// 				bulletCount = 0;
-// 				fired = 0;
-// 				state = bullet_wait;
-// 			}
-// 	}
-// 	return state;
-// }
+int Bullet_Tick(int state) {
+	switch (state) {
+		case bullet_wait:
+			if (fired) {
+				state = draw;
+			}
+			break;
+		case draw:
+			if (!fired) {
+				state = bullet_wait;
+			}
+			break;
+	}
+	switch (state) {
+		case bullet_wait:
+			break;
+		case draw:
+			if (reset) {
+				bulletCount = 48;
+			}
+			nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
+			nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
+			bulletPos = get_rect_start_x() + 4;
+			nokia_lcd_set_cursor(0,0);
+			nokia_lcd_write_char(bulletPos,1);
+				
+			if (bulletCount > 0) {
+				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
+			}
+			++bulletCount;
+			if (bulletCount > 32/*47*/) { //bullet reaching enemy
+				ClearBullet();
+				CheckPosition();
+				DetermineWin();
+				bulletCount = 0;
+				fired = 0;
+				state = bullet_wait;
+			}
+	}
+	return state;
+}
 
-int Enemies_Tick(int state) {
+int Enemies_Tick(int state) { //draw the line of enemies
 	if (!start_game) {
 		return enemies_wait;
 	}
-	//read in global var for position, set E[i] to -2 -> if -2 then skip
+	unsigned char a;
 	switch (state) {
 		case draw_enemies:
-			for (unsigned char a = 0; a < 8; ++a) {
-/*				if (a != enemy_to_skip) {*/
+			for (a = 0; a < 8; ++a) {
+				if (a != enemy_to_skip[a]) {
 					nokia_lcd_set_cursor(10*a + 5, 10);
-					enemiesPos[a] = get_x() - 1;
+					enemiesPos[a] = /*10*a+5*/get_x() - 1;
 					DrawEnemies();
-/*				}*/
+				}
 			}
 			break;
 	}
 	return draw_enemies;
 }
 
-// bool Check_Attack() {
-// 	bool attacked;
-// 	unsigned char i,j;
-// 	for (i = 0; i < 8; ++i) {
-// 		for (j = 0; j < 10; ++j) {
-// 			if (bulletPos[j] == enemiesPos[i]) {
-// 				enemy_to_skip = i;
-// 				bulletPos[j] = -1;
-// 				++score;
-// 				attacked = true;
-// 				break;
-// 			}
-// 		}
-// 	}
-// }
-
-// int DisplayScore_Tick(int state) {
-// 	if (!start_game) {
-// 		return DisplayScore_wait;
-// 	}
-// 	switch (state) {
-// 		case display:
-// 			nokia_lcd_set_cursor(0,0);
-// 			nokia_lcd_write_string("SCORE: ", 1);
-// 			nokia_lcd_set_cursor(35, 0);
-// 			nokia_lcd_write_char(score + '0', 1);
-// 			state = display;
-// 			break;
-// 	}
-// 	return state;
-// }
+void Score_Tick() { //just a function to update score
+	nokia_lcd_set_cursor(0,0);
+	nokia_lcd_write_string("SCORE: ", 1);
+}
 
 int main (void)
 {	
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
-	DDRC = 0x00; PORTC = 0xFF; 
+	DDRC = 0x00; PORTC = 0xFF;
+	
+// 	task2.state = msg_wait;
+// 	task2.period = 2000;
+// 	task2.elapsedTime = task2.period;
+// 	task2.TickFct = &DisplayMsg;
 	
 	task1.state = easy;
 	task1.period = 100;
@@ -502,17 +539,17 @@ int main (void)
 	task5.elapsedTime = task5.period;
 	task5.TickFct = &Enemies_Tick;
 	
-// 	task6.state = display;
-// 	task6.period = 25;
+// 	task6.state = enemies_wait;
+// 	task6.period = 25;//100;
 // 	task6.elapsedTime = task6.period;
-// 	task6.TickFct = &DisplayScore_Tick;
+// 	task6.TickFct = &Enemies_Tick;
 	
 	TimerSet(25);
 	TimerOn();
 	
 	ADC_init();
 	nokia_lcd_init();
-	
+
 	unsigned char i;
 	while(1) {
 		for (i = 0; i < numTasks; ++i) {
@@ -532,3 +569,36 @@ int main (void)
 		//while(1) {continue;}
 	}
 }
+
+
+
+
+task1.state = easy;
+	task1.period = 100;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &Menu_Tick;
+	
+	task2.state = display_msg;
+	task2.period = 100;
+	task2.elapsedTime = task2.period;
+	task2.TickFct = &Message_Tick;
+		
+	task3.state = joystick_wait;
+	task3.period = 100;
+	task3.elapsedTime = task3.period;
+	task3.TickFct = &Joystick_Tick;
+	
+	task4.state = button_wait;
+	task4.period = 50;
+	task4.elapsedTime = task4.period;
+	task4.TickFct = &Button_Tick;
+	
+	task5.state = bullet_wait;
+	task5.period = 75;
+	task5.elapsedTime = task5.period;
+	task5.TickFct = &Bullet_Tick;
+	
+	task6.state = enemies_wait;
+	task6.period = 25;//100;
+	task6.elapsedTime = task6.period;
+	task6.TickFct = &Enemies_Tick;

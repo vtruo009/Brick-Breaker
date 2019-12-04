@@ -56,7 +56,7 @@ unsigned char fired = 0; //reset after draw bullet
 unsigned char start_game = 0;
 unsigned char bulletCount = 0;
 unsigned char reset = 0;
-unsigned char won_game = -1; //0 = lost 1 = win
+unsigned char won_game = 0; //0 = lost 1 = win
 unsigned char numEnemiesLeft = 8;
 unsigned char enemy_to_skip[8] = {-1};
 unsigned char enemiesPos[8] = {-1};
@@ -87,6 +87,7 @@ int Enemies_Tick(int state);
 enum DetermineWin_States {determine_wait, win};
 int DetermineWin_Tick(int state);
 
+void InitializeGame();
 void DrawEnemies(); //declaration
 /*---------------------------------------------------------------------------------------------------------------------------------*/
 void DisplayMenu() {
@@ -160,7 +161,7 @@ void DrawEnemies() {
 void CheckPosition() {
 	unsigned char i;
 	for (i = 0; i < 8; ++i) {
-		if (bulletPos == enemiesPos[i]) {
+		if ((bulletPos >= enemiesPos[i]) && (bulletPos <= enemiesPos[i] + 4)) {
 			PORTB = 0x01;
 			enemy_to_skip[i] = i;
 			--numEnemiesLeft;
@@ -175,6 +176,7 @@ void CheckPosition() {
 }
 
 void DetermineWin() {
+	unsigned char reset = ~PINA & 0x08;
 	if (won_game == 1) {
 		nokia_lcd_clear();
 		start_game = 0;
@@ -200,7 +202,7 @@ void InitializeGame() {
 	fired = 0; //reset after draw bullet
 	start_game = 0;
 	bulletCount = 0;
-	won_game = -1; //0 = lost 1 = win
+	won_game = 0; //0 = lost 1 = win
 	//reset = 0;
 	numEnemiesLeft = 8;
 	//enemiesPos[8] = -1;
@@ -240,7 +242,7 @@ int Menu_Tick(int state) {
 	unsigned short x = ADC;
 	unsigned char start_button = ~PINA & 0x04;
 	
-	if (start_game) {
+	if (start_game || won_game) {
 		return game_started;
 	}
 	
@@ -340,13 +342,10 @@ int Joystick_Tick(int state) {
 int Button_Tick(int state) {
 	unsigned char fire_button = ~PINA & 0x08;
 	unsigned char reset_button = ~PINC & 0x01;
-	
-	if (!start_game) {
-		return button_wait;
-	}
+
 	switch (state) {
 		case wait:
-			if (fire_button) {
+			if (fire_button && start_game) {
 				state = fire_pressed;
 			}
 			else if (reset_button) {
@@ -354,7 +353,7 @@ int Button_Tick(int state) {
 			}
 			break;
 		case fire_pressed:
-			if (!fire_button) {
+			if (!fire_button && start_game) {
 				state = wait;
 			}
 			break;
@@ -427,7 +426,7 @@ int Bullet_Tick(int state) {
 }
 
 int Enemies_Tick(int state) { //draw the line of enemies
-	if (!start_game) {
+	if (!start_game/* || won_game*/) {
 		return enemies_wait;
 	}
 	unsigned char a;
