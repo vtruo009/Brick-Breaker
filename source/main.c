@@ -63,10 +63,11 @@ unsigned char enemiesPos[8] = {-1};
 unsigned char bulletPos;
 unsigned char p;
 unsigned char difficulty;
+unsigned char score = 0;
 
 	
-static _task task1, task2, task3, task4, task5;
-_task *tasks[] = {&task1, &task2, &task3, &task4, &task5}; //task array with one task
+static _task task1, task2, task3, task4, task5, task6;
+_task *tasks[] = {&task1, &task2, &task3, &task4, &task5, &task6}; //task array with one task
 const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
 
 /*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
@@ -87,6 +88,9 @@ int Enemies_Tick(int state);
 
 enum DetermineWin_States {determine_wait, win};
 int DetermineWin_Tick(int state);
+
+enum Score_States {score_wait, update};
+int UpdateScore(int state);
 
 void InitializeGame();
 void DrawEnemies(); //declaration
@@ -163,12 +167,11 @@ void CheckPosition() {
 	unsigned char i;
 	for (i = 0; i < 8; ++i) {
 		if ((bulletPos >= enemiesPos[i]) && (bulletPos <= enemiesPos[i] + 4)) {
-			PORTB = 0x01;
 			enemy_to_skip[i] = i;
 			--numEnemiesLeft;
+			++score;
 			nokia_lcd_clear();
 			if (!numEnemiesLeft) {
-				PORTB = 0x01;
 				won_game = 1;
 			}
 			break;
@@ -212,7 +215,6 @@ void InitializeGame() {
 	}
 	bulletPos = -1;
 	
-	task1.state = easy;
 	task1.period = 100;
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &Menu_Tick;
@@ -236,6 +238,11 @@ void InitializeGame() {
 	task5.period = 25;//100;
 	task5.elapsedTime = task5.period;
 	task5.TickFct = &Enemies_Tick;
+	
+	task6.state = score_wait;
+	task6.period = 25;
+	task6.elapsedTime = task6.period;
+	task6.TickFct = &UpdateScore;
 	
 }
 
@@ -271,6 +278,7 @@ int Menu_Tick(int state) {
 		case easy:
 			nokia_lcd_set_rect_start(20,46);
 			difficulty = 10;
+			score = 0;
 			nokia_lcd_clear();
 			DisplayMenu();
 			DrawPlatform();
@@ -278,6 +286,7 @@ int Menu_Tick(int state) {
 		case medium:
 			nokia_lcd_set_rect_start(55,46);
 			difficulty = 35;
+			score = 0;
 			nokia_lcd_clear();
 			DisplayMenu();
 			DrawPlatform();
@@ -409,8 +418,8 @@ int Bullet_Tick(int state) {
 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
 			bulletPos = get_rect_start_x() + 4;
-			nokia_lcd_set_cursor(0,0);
-			nokia_lcd_write_char(bulletPos,1);
+// 			nokia_lcd_set_cursor(0,0);
+// 			nokia_lcd_write_char(bulletPos,1);
 				
 			if (bulletCount > 0) {
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
@@ -429,7 +438,7 @@ int Bullet_Tick(int state) {
 }
 
 int Enemies_Tick(int state) { //draw the line of enemies
-	if (!start_game/* || won_game*/) {
+	if (!start_game) {
 		return enemies_wait;
 	}
 	unsigned char a;
@@ -447,9 +456,25 @@ int Enemies_Tick(int state) { //draw the line of enemies
 	return draw_enemies;
 }
 
-void Score_Tick() { //just a function to update score
-	nokia_lcd_set_cursor(0,0);
-	nokia_lcd_write_string("SCORE: ", 1);
+int UpdateScore(int state) { //just a function to update score
+	if (!start_game) {
+		return score_wait;
+	}
+	else {
+		state = update;
+	}
+	
+	switch (state) {
+		case update:
+			nokia_lcd_set_cursor(0,0);
+			nokia_lcd_write_string("SCORE: ", 1);
+	
+			nokia_lcd_set_cursor(35, 0);
+			nokia_lcd_write_char(score + '0', 1);
+			state = update;
+			break;
+	}
+	return state;
 }
 
 int main (void)
@@ -484,6 +509,10 @@ int main (void)
 	task5.elapsedTime = task5.period;
 	task5.TickFct = &Enemies_Tick;
 	
+	task6.state = score_wait;
+	task6.period = 25;
+	task6.elapsedTime = task6.period;
+	task6.TickFct = &UpdateScore;
 	
 	TimerSet(25);
 	TimerOn();
