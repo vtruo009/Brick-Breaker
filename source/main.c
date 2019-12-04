@@ -55,10 +55,11 @@ signed int direction = 0; //direction flags
 unsigned char fired = 0; //reset after draw bullet
 unsigned char start_game = 0;
 unsigned char bulletCount = 0;
-unsigned char bulletIndex = 0;
 unsigned char reset = 0;
+unsigned char e_count = 0;
+unsigned char enemy_to_skip[8] = {-1};
 unsigned char enemiesPos[8];
-unsigned int bulletPos[15];
+unsigned char bulletPos;
 
 	
 static _task task1, task2, task3, task4, task5;
@@ -74,7 +75,7 @@ int Joystick_Tick(int state);
 
 enum Button_States {button_wait, wait, fire_pressed, reset_pressed};
 int Button_Tick(int state);
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 enum Bullet_States {bullet_wait, draw};
 int Bullet_Tick(int state);
 
@@ -124,6 +125,11 @@ void DrawBullet() {
 	nokia_lcd_set_pixel(get_rect_start_x() + 4, 45, 1);
 }
 
+void ClearBullet() {
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, get_rect_y() - 33, 0);
+	nokia_lcd_set_pixel(get_rect_start_x() + 4, get_rect_y() - 34, 0);
+}
+
 void DrawEnemies() {
 	signed char i = 0;
 	signed char j = 0;
@@ -146,6 +152,17 @@ void DrawEnemies() {
 	//}
 }
 
+void CheckPosition() {
+	unsigned char i;
+	for (i = 0; i < 8; ++i) {
+		if (bulletPos == enemiesPos[i]) {
+			PORTB = 0x01;
+			enemy_to_skip[i] = i;
+			break;
+		}
+	}
+}
+
 void InitializeGame() {
 	nokia_lcd_set_cursor(0,0);
 	nokia_lcd_set_rect_start(37,46);
@@ -154,10 +171,9 @@ void InitializeGame() {
 	fired = 0; //reset after draw bullet
 	start_game = 0;
 	bulletCount = 0;
-	bulletIndex = 0;
 	//reset = 0;
 	enemiesPos[8] = -1;
-	bulletPos[15] = -1;
+	bulletPos = -1;
 	
 	task1.state = easy;
 	task1.period = 100;
@@ -356,14 +372,17 @@ int Bullet_Tick(int state) {
 			}
 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
 			nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
-			bulletPos[bulletIndex] = get_rect_start_x + 4;
-			++bulletIndex;
+			bulletPos = get_rect_start_x() + 4;
+			nokia_lcd_set_cursor(0,0);
+			nokia_lcd_write_char(bulletPos,1);
 				
 			if (bulletCount > 0) {
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
 			}
 			++bulletCount;
-			if (bulletCount > 47) {
+			if (bulletCount > 32/*47*/) { //bullet reaching enemy
+				ClearBullet();
+				CheckPosition();
 				bulletCount = 0;
 				fired = 0;
 				state = bullet_wait;
@@ -372,17 +391,19 @@ int Bullet_Tick(int state) {
 	return state;
 }
 
-int Enemies_Tick(int state) {
+int Enemies_Tick(int state) { //draw the line of enemies
 	if (!start_game) {
 		return enemies_wait;
 	}
-	
+	unsigned char a;
 	switch (state) {
 		case draw_enemies:
-			for (unsigned char a = 0; a < 8; ++a) {
-				nokia_lcd_set_cursor(10*a + 5, 10);
-				enemiesPos[a] = get_x() - 1;
-				DrawEnemies();
+			for (a = 0; a < 8; ++a) {
+				if (a != enemy_to_skip[a]) {
+					nokia_lcd_set_cursor(10*a + 5, 10);
+					enemiesPos[a] = /*10*a+5*/get_x() - 1;
+					DrawEnemies();
+				}
 			}
 			break;
 	}
@@ -400,11 +421,6 @@ int main (void)
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
 	DDRC = 0x00; PORTC = 0xFF;
-	
-	/* Insert application code here, after the board has been initialized. */
-// 	static _task task1, task2, task3, task4, task5; //only one SM
-// 	_task *tasks[] = {&task1, &task2, &task3, &task4, &task5}; //task array with one task
-// 	const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
 	
 	task1.state = easy;
 	task1.period = 100;
