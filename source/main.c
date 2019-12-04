@@ -60,23 +60,25 @@ unsigned char reset = 0;
 unsigned char enemiesPos[8];
 unsigned int bulletPos[15];
 
-static _task task1, task2, task3, task4/*, task5, task6*/; //only one SM
-_task *tasks[] = {&task1, &task2, &task3, &task4, /*&task5, &task6*/}; //task array with one task
+	
+static _task task1, task2, task3, task4, task5;
+_task *tasks[] = {&task1, &task2, &task3, &task4, &task5}; //task array with one task
 const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
-/*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
-enum Menu_States {wait_selection, up, down, start_pressed, instruction_pressed} Menu_state;
-void Menu_Tick();
 
-enum Joystick_States {center, left, right};
+/*-------------------------------------------------ENUMS & SM Declarations---------------------------------------------------------*/
+enum Menu_States {easy, medium, start_pressed, game_started} Menu_state;
+int Menu_Tick(int state);
+
+enum Joystick_States {joystick_wait, center, left, right};
 int Joystick_Tick(int state);
 
-enum Button_States {wait, fire_pressed, reset_pressed};
+enum Button_States {button_wait, wait, fire_pressed, reset_pressed};
 int Button_Tick(int state);
 
-enum Bullet_States {hold, draw};
+enum Bullet_States {bullet_wait, draw};
 int Bullet_Tick(int state);
 
-enum Enemies_States {draw_enemies};
+enum Enemies_States {enemies_wait, draw_enemies};
 int Enemies_Tick(int state);
 
 void DrawEnemies(); //declaration
@@ -153,78 +155,94 @@ void InitializeGame() {
 	start_game = 0;
 	bulletCount = 0;
 	bulletIndex = 0;
+	//reset = 0;
 	enemiesPos[8] = -1;
 	bulletPos[15] = -1;
 	
-	task1.state = center;
+	task1.state = easy;
 	task1.period = 100;
 	task1.elapsedTime = task1.period;
-	task1.TickFct = &Joystick_Tick;
+	task1.TickFct = &Menu_Tick;
 	
-	task2.state = wait;
-	task2.period = 50;
+	task2.state = joystick_wait;
+	task2.period = 100;
 	task2.elapsedTime = task2.period;
-	task2.TickFct = &Button_Tick;
+	task2.TickFct = &Joystick_Tick;
 	
- 	task3.state = hold;
-	task3.period = 75;
+	task3.state = button_wait;
+	task3.period = 50;
 	task3.elapsedTime = task3.period;
-	task3.TickFct = &Bullet_Tick;
- 	
-	task4.state = draw_enemies;
-	task4.period = 100;
+	task3.TickFct = &Button_Tick;
+	
+	task4.state = bullet_wait;
+	task4.period = 75;
 	task4.elapsedTime = task4.period;
-	task4.TickFct = &Enemies_Tick;
+	task4.TickFct = &Bullet_Tick;
+	
+	task5.state = enemies_wait;
+	task5.period = 25;//100;
+	task5.elapsedTime = task5.period;
+	task5.TickFct = &Enemies_Tick;
+	
 }
 
-void Menu_Tick() {
-	unsigned char button = ~PINA & 0x08;
-	unsigned char joystick = ADC;
-	switch (Menu_state) {
-		case wait_selection:
-			if (joystick > left_val && joystick < right_val){
-				Menu_state = wait_selection;
-			}
-			else if (joystick < left_val) {
-				Menu_state = left;
-				PORTB = 0x01;
-			}
-			else if (joystick > right_val) {
-				Menu_state = right;
-			}
-			break;
-		case start_pressed:
-			break;
-		case instruction_pressed:
-			break;
+int Menu_Tick(int state) {
+	unsigned short x = ADC;
+	unsigned char start_button = ~PINA & 0x04;
+	
+	if (start_game) {
+		return game_started;
+	}
+	
+	if (x > left_val && x < right_val && !start_button) {
+		if (reset) {
+			Menu_state = easy;
+			reset = 0;
+		}
+		else {
+			Menu_state = Menu_state;
+		}
+	}
+	else if (x < left_val) {
+		Menu_state = easy;
+	}
+	else if (x > right_val) {
+		Menu_state = medium;
+	}
+	else if (start_button) {
+		start_game = 1;
+		Menu_state = start_pressed;
 	}
 	
 	switch (Menu_state) {
-		case wait_selection:
+		case easy:
+			nokia_lcd_set_rect_start(20,46);
+			nokia_lcd_clear();
 			DisplayMenu();
-			nokia_lcd_set_rect_start(15, 46);
 			DrawPlatform();
 			break;
-		case left:
-			PORTB = 0x02;
+		case medium:
+			nokia_lcd_set_rect_start(55,46);
+			nokia_lcd_clear();
 			DisplayMenu();
-			nokia_lcd_set_rect_start(15, 46);
-			break;
-		case right:
-			PORTB = 0x03;
-			DisplayMenu();
-			nokia_lcd_set_rect_start(45, 46);
 			DrawPlatform();
+			break;
 		case start_pressed:
-			start_game = 1;
+			nokia_lcd_clear();
+			nokia_lcd_set_rect_start(37,46);
 			break;
-		case instruction_pressed:
+		case game_started:
 			break;
 	}
+	return state;
 }
 
 int Joystick_Tick(int state) {
 	unsigned short x = ADC;
+	if (!start_game) {
+		return joystick_wait;
+	}
+	
 	if (x > left_val && x < right_val) {
 		state = center;
 	}
@@ -236,6 +254,8 @@ int Joystick_Tick(int state) {
 	}
 	
 	switch (state) {
+// 		case joystick_wait:
+// 			break;
 		case center:
 			direction = 0;
 			DrawPlatform();
@@ -270,6 +290,10 @@ int Joystick_Tick(int state) {
 int Button_Tick(int state) {
 	unsigned char fire_button = ~PINA & 0x08;
 	unsigned char reset_button = ~PINC & 0x01;
+	
+	if (!start_game) {
+		return button_wait;
+	}
 	switch (state) {
 		case wait:
 			if (fire_button) {
@@ -294,12 +318,15 @@ int Button_Tick(int state) {
 	}
 	
 	switch (state) {
+		case button_wait:
+			break;
 		case wait:
 			break;
 		case fire_pressed:
 			fired = 1;
 			break;
 		case reset_pressed:
+			reset = 1;
 			nokia_lcd_clear();
 			InitializeGame();
 			break;
@@ -309,50 +336,57 @@ int Button_Tick(int state) {
 
 int Bullet_Tick(int state) {
 	switch (state) {
-		case hold:
+		case bullet_wait:
 			if (fired) {
 				state = draw;
 			}
 			break;
 		case draw:
 			if (!fired) {
-				state = hold;
+				state = bullet_wait;
 			}
 			break;
 	}
 	switch (state) {
-		case hold:
+		case bullet_wait:
 			break;
 		case draw:
-			/*if (!reset && fired) {*/
-				if (reset) {
-					bulletCount = 48;
-				}
-				nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
-				nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
-				bulletPos[bulletIndex] = get_rect_start_x + 4;
-				++bulletIndex;
+			if (reset) {
+				bulletCount = 48;
+			}
+			nokia_lcd_set_pixel(get_rect_start_x() + 4, 44 - bulletCount, 1);
+			nokia_lcd_set_pixel(get_rect_start_x() + 4, 45 - bulletCount, 1);
+			bulletPos[bulletIndex] = get_rect_start_x + 4;
+			++bulletIndex;
 				
-				if (bulletCount > 0) {
-					nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
-				}
-				++bulletCount;
-				if (bulletCount > 47) {
-					bulletCount = 0;
-					fired = 0;
-					state = hold;
-				}
-			//}
+			if (bulletCount > 0) {
+				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
+			}
+			++bulletCount;
+			if (bulletCount > 47) {
+				bulletCount = 0;
+				fired = 0;
+				state = bullet_wait;
+			}
 	}
 	return state;
 }
 
 int Enemies_Tick(int state) {
-	for (unsigned char a = 0; a < 8; ++a) {
-		nokia_lcd_set_cursor(10*a + 5, 10);
-		enemiesPos[a] = get_x() - 1;
-		DrawEnemies();
+	if (!start_game) {
+		return enemies_wait;
 	}
+	
+	switch (state) {
+		case draw_enemies:
+			for (unsigned char a = 0; a < 8; ++a) {
+				nokia_lcd_set_cursor(10*a + 5, 10);
+				enemiesPos[a] = get_x() - 1;
+				DrawEnemies();
+			}
+			break;
+	}
+	return draw_enemies;
 }
 
 void Score_Tick() {
@@ -368,49 +402,50 @@ int main (void)
 	DDRC = 0x00; PORTC = 0xFF;
 	
 	/* Insert application code here, after the board has been initialized. */
-	static _task task1, task2, task3, task4; //only one SM
-	_task *tasks[] = {&task1, &task2, &task3, &task4}; //task array with one task
-	const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
+// 	static _task task1, task2, task3, task4, task5; //only one SM
+// 	_task *tasks[] = {&task1, &task2, &task3, &task4, &task5}; //task array with one task
+// 	const unsigned short numTasks = sizeof(tasks)/sizeof(_task*);
 	
-	task1.state = center;
+	task1.state = easy;
 	task1.period = 100;
 	task1.elapsedTime = task1.period;
-	task1.TickFct = &Joystick_Tick;
+	task1.TickFct = &Menu_Tick;
 	
-	task2.state = wait;
-	task2.period = 50;
+	task2.state = joystick_wait;
+	task2.period = 100;
 	task2.elapsedTime = task2.period;
-	task2.TickFct = &Button_Tick;
+	task2.TickFct = &Joystick_Tick;
 	
-	task3.state = hold;
-	task3.period = 75;
+	task3.state = button_wait;
+	task3.period = 50;
 	task3.elapsedTime = task3.period;
-	task3.TickFct = &Bullet_Tick;
+	task3.TickFct = &Button_Tick;
 	
-	task4.state = draw_enemies;
-	task4.period = 100;
+	task4.state = bullet_wait;
+	task4.period = 75;
 	task4.elapsedTime = task4.period;
-	task4.TickFct = &Enemies_Tick;
+	task4.TickFct = &Bullet_Tick;
 	
+	task5.state = enemies_wait;
+	task5.period = 25;//100;
+	task5.elapsedTime = task5.period;
+	task5.TickFct = &Enemies_Tick;
 	
 	TimerSet(25);
 	TimerOn();
 	
 	ADC_init();
 	nokia_lcd_init();
-
+	
 	unsigned char i;
 	while(1) {
-// 		Menu_Tick();
-// 		if (start_game) {
-			for (i = 0; i < numTasks; ++i) {
-				if (tasks[i]->elapsedTime == tasks[i]->period) {
-					tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
-					tasks[i]->elapsedTime = 0;
-				}
-				tasks[i]->elapsedTime += 25;
+		for (i = 0; i < numTasks; ++i) {
+			if (tasks[i]->elapsedTime == tasks[i]->period) {
+				tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
+				tasks[i]->elapsedTime = 0;
 			}
-//		}
+			tasks[i]->elapsedTime += 25;
+		}
 // 		int i, j;
 // 		for (i = 0; i < 30; ++i){
 // 			for (j = 0; j < 3000; ++j);
