@@ -62,6 +62,7 @@ unsigned char enemy_to_skip[8] = {-1};
 unsigned char enemiesPos[8] = {-1};
 unsigned char bulletPos;
 unsigned char p;
+unsigned char difficulty;
 
 	
 static _task task1, task2, task3, task4, task5;
@@ -269,12 +270,14 @@ int Menu_Tick(int state) {
 	switch (Menu_state) {
 		case easy:
 			nokia_lcd_set_rect_start(20,46);
+			difficulty = 10;
 			nokia_lcd_clear();
 			DisplayMenu();
 			DrawPlatform();
 			break;
 		case medium:
 			nokia_lcd_set_rect_start(55,46);
+			difficulty = 35;
 			nokia_lcd_clear();
 			DisplayMenu();
 			DrawPlatform();
@@ -413,7 +416,7 @@ int Bullet_Tick(int state) {
 				nokia_lcd_set_pixel(get_rect_start_x() + 4, 46 - bulletCount, 0);
 			}
 			++bulletCount;
-			if (bulletCount > 32/*47*/) { //bullet reaching enemy
+			if (bulletCount > 43 - difficulty/*3247*/) { //bullet reaching enemy
 				ClearBullet();
 				CheckPosition();
 				DetermineWin();
@@ -434,7 +437,7 @@ int Enemies_Tick(int state) { //draw the line of enemies
 		case draw_enemies:
 			for (a = 0; a < 8; ++a) {
 				if (a != enemy_to_skip[a]) {
-					nokia_lcd_set_cursor(10*a + 5, 10);
+					nokia_lcd_set_cursor(10*a + 5, difficulty);
 					enemiesPos[a] = /*10*a+5*/get_x() - 1;
 					DrawEnemies();
 				}
