@@ -64,7 +64,8 @@ unsigned char bulletPos;
 unsigned char p;
 unsigned char difficulty;
 unsigned char score = 0;
-
+unsigned char scoot = 3;
+unsigned char count = 0;
 	
 static _task task1, task2, task3, task4, task5, task6;
 _task *tasks[] = {&task1, &task2, &task3, &task4, &task5, &task6}; //task array with one task
@@ -98,19 +99,29 @@ void DrawEnemies(); //declaration
 void DisplayMenu() {
 	nokia_lcd_set_cursor(0,0);
 	nokia_lcd_write_char('S',2);
-	nokia_lcd_write_char('P',2);
-	nokia_lcd_write_char('A',2);
 	nokia_lcd_write_char('C',2);
-	nokia_lcd_write_char('E',2);
-	
-	nokia_lcd_set_cursor(8,15);
-	nokia_lcd_write_char('S',2);
-	nokia_lcd_write_char('H',2);
 	nokia_lcd_write_char('O',2);
 	nokia_lcd_write_char('O',2);
 	nokia_lcd_write_char('T',2);
-	nokia_lcd_write_char('E',2);
-	nokia_lcd_write_char('R',2);
+	
+	nokia_lcd_set_cursor(5, 15);
+	nokia_lcd_write_char('S',1);
+	nokia_lcd_write_char('C',1);
+	nokia_lcd_write_char('O',1);
+	nokia_lcd_write_char('O',1);
+	nokia_lcd_write_char('T',1);
+	
+	nokia_lcd_set_cursor(40,15);
+	nokia_lcd_write_char('N',2);
+	nokia_lcd_write_char('O',2);
+	nokia_lcd_write_char('O',2);
+	nokia_lcd_write_char('K',2);
+	
+	nokia_lcd_set_cursor(55, 7);
+	nokia_lcd_write_char('N',1);
+	nokia_lcd_write_char('O',1);
+	nokia_lcd_write_char('O',1);
+	nokia_lcd_write_char('K',1);
 	
 	nokia_lcd_set_cursor(10, 35);
 	nokia_lcd_write_string("easy", 1);
@@ -277,7 +288,7 @@ int Menu_Tick(int state) {
 	switch (Menu_state) {
 		case easy:
 			nokia_lcd_set_rect_start(20,46);
-			difficulty = 10;
+			difficulty = 30;
 			score = 0;
 			nokia_lcd_clear();
 			DisplayMenu();
@@ -285,7 +296,7 @@ int Menu_Tick(int state) {
 			break;
 		case medium:
 			nokia_lcd_set_rect_start(55,46);
-			difficulty = 35;
+			difficulty = 10;
 			score = 0;
 			nokia_lcd_clear();
 			DisplayMenu();
@@ -328,7 +339,7 @@ int Joystick_Tick(int state) {
 			--direction;
 			if (get_rect_start_x() + direction >= 0) {
 				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
-				nokia_lcd_clear();
+				//nokia_lcd_clear();
 				DrawPlatform();
 			}
 			break;
@@ -336,7 +347,7 @@ int Joystick_Tick(int state) {
 			++direction;
 			if (get_rect_start_x() + direction <= 75) {
 				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
-				nokia_lcd_clear();
+				//nokia_lcd_clear();
 				DrawPlatform();
 			}
 			break;
@@ -444,15 +455,30 @@ int Enemies_Tick(int state) { //draw the line of enemies
 	unsigned char a;
 	switch (state) {
 		case draw_enemies:
-			for (a = 0; a < 8; ++a) {
-				if (a != enemy_to_skip[a]) {
-					nokia_lcd_set_cursor(10*a + 5, difficulty);
-					enemiesPos[a] = /*10*a+5*/get_x() - 1;
-					DrawEnemies();
+			if (count > 19) {
+				nokia_lcd_clear();
+				for (a = 0; a < 8; ++a) {
+					if (a != enemy_to_skip[a]) {
+						nokia_lcd_set_cursor((10*a + 5) + scoot, difficulty);
+						enemiesPos[a] = /*10*a+5*/get_x() - 1;
+						DrawEnemies();
+						DrawPlatform();
+						DrawBullet();
+					}
 				}
+				count = 0;
 			}
+			else {
+				++count;
+				//nokia_lcd_clear();
+				DrawPlatform();
+				DrawBullet();
+			}
+			scoot *= -1;
 			break;
 	}
+// 	DrawPlatform();
+// 	DrawBullet();
 	return draw_enemies;
 }
 
