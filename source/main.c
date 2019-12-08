@@ -231,6 +231,45 @@ void Joystick_Tick() {
 	nokia_lcd_render();
 }
 
+int Joystick_Tick(int state) {
+	unsigned short x = ADC;
+	if (x > left_val && x < right_val) {
+		state = center;
+	}
+	else if (x < left_val) {
+		state = left;
+	}
+	else if (x > right_val) {
+		state = right;
+	}
+
+	switch (state) {
+		case center:
+			direction = 0;
+			DrawPlatform();
+			break;
+		case left:
+			--direction;
+			if (get_rect_start_x() + direction >= 0) {
+				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
+				nokia_lcd_clear();
+				DrawPlatform();
+			}
+			break;
+		case right:
+			++direction;
+			if (get_rect_start_x() + direction <= 75) {
+				nokia_lcd_set_rect_start(get_rect_start_x() + direction, 46);
+				nokia_lcd_clear();
+				DrawPlatform();
+			}
+			break;
+		default:
+			break;
+	}
+	return state;
+}
+
 void Shoot_Tick() {
 	unsigned char shot;
 	switch (Shoot_state) {

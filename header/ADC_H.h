@@ -18,8 +18,12 @@
 /*void ADC_Init();
 int ADC_Read(char);*/
 
-void ADC_init();
-void ADC_channel(unsigned char channel);
-unsigned short ADC_read(unsigned char channel);
+//void ADC_init();
+// void ADC_channel(unsigned char channel);
+// unsigned short ADC_read(unsigned char channel);
+
+void ADC_init(){
+	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
+}
 
 #endif /* ADC_H_H_ */
