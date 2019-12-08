@@ -249,3 +249,30 @@ uint8_t get_rect_start_x() {
 uint8_t get_rect_y() {
 	return nokia_lcd.cursor_rect_y;
 }
+
+void nokia_lcd_clear_bottom(void)
+{
+	register unsigned i;
+	/* Set column and row to 0 */
+	write_cmd(0x80);
+	write_cmd(0x40);
+	/*Cursor too */
+	nokia_lcd.cursor_x = 0;
+	nokia_lcd.cursor_y = 40;
+	/* Clear everything (504 bytes = 84cols * 48 rows / 8 bits) */
+	for(i = 0; i < 84; i++)
+	nokia_lcd.screen[i] = 0x00;
+}
+
+void nokia_lcd_clear_enemies(void) {
+		register unsigned i;
+		/* Set column and row to 0 */
+		write_cmd(0x80);
+		write_cmd(0x40);
+		/*Cursor too */
+		nokia_lcd.cursor_x = 0;
+		nokia_lcd.cursor_y = 20;
+		/* Clear everything (504 bytes = 84cols * 48 rows / 8 bits) */
+		for(i = 0;i < 420; i++)
+		nokia_lcd.screen[i] = 0x00;
+}
