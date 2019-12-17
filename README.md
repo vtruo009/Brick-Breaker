@@ -12,3 +12,24 @@ When the game first starts, a main menu screen displays the title and the diffic
 	* Use attack button to shoot bullet (yellow circle)
 	* Use reset button to restart game at anytime (red circle)
 * Rules
+	* Can only shoot one bullet at a time
+	* Clear all asteroids to win
+	* Wait until bullet hits asteroid or disappears to shoot again
+
+## Technologies and Components
+* Nokia 5110 LCD Screen - used to display game
+* 2-Axis Joystick - used for movement control
+* Buttons - used to attack and reset
+* Atmega1284 Microcontroller
+* IEEE Programming Chip
+* Breadboard
+* Atmel Studio 7
+
+## Bugs & Imperfections
+A problem occurred with the timer that causes a shadow to follow the player's ship when moving around the screen. An attempt was made to fix the problem but that caused a shadow to follow the asteroids. In addition, the bullet follows the player's ship if player decides to move while the bullet is traveling up. Thus, player has to wait until bullet hits target or disappears to prevent altering the bullet's path.
+
+## Future Plans
+I will attempt to fix the shadow issue by fixing the timer. Also, I will redesign the game logic to allow player to shoot multiple bullets at a time with each bullet being able to travel in an independent path.
+
+## Demo Video
+https://www.youtube.com/watch?v=7XM2AXjAvqw
