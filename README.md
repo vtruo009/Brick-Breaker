@@ -8,6 +8,7 @@ When the game first starts, a main menu screen displays the title and the diffic
 
 ## User Guide
 * Controls
-... * Use 2-axis joystick to control ship (blue circle)
-... * Use attack button to shoot bullet (yellow circle)
+	* Use 2-axis joystick to control ship (blue circle)
+	* Use attack button to shoot bullet (yellow circle)
+	* Use reset button to restart game at anytime (red circle)
 * Rules
