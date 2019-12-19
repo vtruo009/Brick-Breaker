@@ -10,7 +10,7 @@ When the game first starts, a main menu screen displays the title and the diffic
 
 ## User Guide
 * Controls
-	* Use 2-axis joystick to control ship (blue circle)
+	* Use 2-axis joystick to control ship/select difficulty level (blue circle)
 	* Use attack button to shoot bullet (yellow circle)
 	* Use reset button to restart game at anytime (red circle)
 * Rules
@@ -28,6 +28,8 @@ When the game first starts, a main menu screen displays the title and the diffic
 * IEEE Programming Chip
 * Breadboard
 * Atmel Studio 7
+
+![alt text]
 
 ## Bugs & Imperfections
 A problem occurred with the timer that causes a shadow to follow the player's ship when moving around the screen. An attempt was made to fix the problem but that caused a shadow to follow the asteroids. In addition, the bullet follows the player's ship if player decides to move while the bullet is traveling up. Thus, player has to wait until bullet hits target or disappears to prevent altering the bullet's path.
