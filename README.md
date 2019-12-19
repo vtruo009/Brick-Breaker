@@ -29,7 +29,15 @@ When the game first starts, a main menu screen displays the title and the diffic
 * Breadboard
 * Atmel Studio 7
 
-![alt text]
+![alt text](https://github.com/vtruo009/Scoot-Scoot-Nook-Nook/blob/master/Images/Atmega1284.jpg "Atmega1284 PINs")
+
+* PINA
+	* (A0, A2) - used for reading joystick input (red boxes)
+	* (A3) - used for attack button (blue box)
+* PINC
+	* (C0) - used for reset button (indicated by green box)
+* PIND
+	* (A[5:1]) - used for Nokia 5110 LCD display (yellow box)
 
 ## Bugs & Imperfections
 A problem occurred with the timer that causes a shadow to follow the player's ship when moving around the screen. An attempt was made to fix the problem but that caused a shadow to follow the asteroids. In addition, the bullet follows the player's ship if player decides to move while the bullet is traveling up. Thus, player has to wait until bullet hits target or disappears to prevent altering the bullet's path.
